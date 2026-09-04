@@ -61,3 +61,13 @@ CREATE TABLE Enrolments (
     CONSTRAINT FK_Enrolments_Categories
         FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
 );
+
+CREATE TABLE Results (
+    ResultID INT PRIMARY KEY,
+    EnrolmentID INT NOT NULL,
+    FinishTime TIME,
+    Position INT,
+    RecordedAt DATETIME,
+    CONSTRAINT FK_Results_Enrolments
+        FOREIGN KEY (EnrolmentID) REFERENCES Enrolments(EnrolmentID)
+);
