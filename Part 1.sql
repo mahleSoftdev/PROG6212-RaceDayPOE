@@ -29,3 +29,23 @@ ALTER TABLE Events
 ADD CONSTRAINT FK_Events_Venues
     FOREIGN KEY (VenueID) REFERENCES Venues(VenueID);
 
+CREATE TABLE Venues (
+    VenueID INT PRIMARY KEY,
+    Name NVARCHAR(150),
+    AddressLine NVARCHAR(200),
+    City NVARCHAR(100),
+    Province NVARCHAR(100),
+    Latitude DECIMAL(9,6),
+    Longitude DECIMAL(9,6)
+);
+
+CREATE TABLE Categories (
+    CategoryID INT PRIMARY KEY,
+    EventID INT NOT NULL,
+    Name NVARCHAR(100),
+    DistanceKm DECIMAL(6,2),
+    MaxParticipants INT,
+    EntryFee DECIMAL(10,2),
+    CONSTRAINT FK_Categories_Events
+        FOREIGN KEY (EventID) REFERENCES Events(EventID)
+);
