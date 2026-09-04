@@ -36,9 +36,16 @@ jobs:
           test -f "docs/ERDDIAGRAM.drawio.png" || exit 1
           test -f "docs/Part 1.sql" || exit 1
           test -f "README.md" || exit 1
-
       - name: Checking SQL structure
-        run: |
-          grep -qi "CREATE TABLE" "docs/Part 1.sql" || exit 1
-          grep -qi "PRIMARY KEY" "docs/Part 1.sql" || exit 1
-          grep -qi "FOREIGN KEY" "docs/Part 1.sql" || exit 1
+      run: |
+        echo "Checking CREATE TABLE..."
+        grep -qi "CREATE TABLE" "docs/Part 1.sql" || { echo "CREATE TABLE missing"; exit 1; }
+    
+        echo "Checking PRIMARY KEY..."
+        grep -qi "PRIMARY KEY" "docs/Part 1.sql" || { echo "PRIMARY KEY missing"; exit 1; }
+    
+        echo "Checking FOREIGN KEY..."
+        grep -qi "FOREIGN KEY" "docs/Part 1.sql" || { echo "FOREIGN KEY missing"; exit 1; }
+    
+        echo "All SQL structure checks passed."
+
