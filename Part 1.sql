@@ -1,0 +1,11 @@
+CREATE DATABASE racedayDB;
+
+CREATE TABLE Users(
+	UserID INT PRIMARY KEY,
+	FirstName NVARCHAR(100),
+	LastName NVARCHAR(100),
+	Email NVARCHAR UNIQUE,
+	PasswordHash NVARCHAR(100),
+	Role NVARCHAR,
+	CreatedAt DATETIME
+);
