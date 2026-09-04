@@ -9,10 +9,14 @@ CREATE TABLE Users(
 	Role NVARCHAR,
 	CreatedAt DATETIME
 );
+ALTER TABLE Users
+ALTER COLUMN Email NVARCHAR(255);
 
 ALTER TABLE Users
-ADD CONSTRAINT CHK_Users_Role
-    CHECK (Role IN ('Admin', 'Organiser', 'Participant'));
+ALTER COLUMN Role NVARCHAR(50);
+
+ALTER TABLE Users
+ALTER COLUMN PasswordHash NVARCHAR(255);
 
 Create TABLE Events(
 	EventID INT PRIMARY KEY,
@@ -75,3 +79,16 @@ CREATE TABLE Results (
     CONSTRAINT FK_Results_Enrolments
         FOREIGN KEY (EnrolmentID) REFERENCES Enrolments(EnrolmentID)
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
