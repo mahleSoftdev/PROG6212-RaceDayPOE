@@ -49,3 +49,15 @@ CREATE TABLE Categories (
     CONSTRAINT FK_Categories_Events
         FOREIGN KEY (EventID) REFERENCES Events(EventID)
 );
+
+CREATE TABLE Enrolments (
+    EnrolmentID INT PRIMARY KEY,
+    UserID INT NOT NULL,
+    CategoryID INT NOT NULL,
+    EnrolmentDate DATETIME,
+    Status NVARCHAR(50),
+    CONSTRAINT FK_Enrolments_Users
+        FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    CONSTRAINT FK_Enrolments_Categories
+        FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
+);
