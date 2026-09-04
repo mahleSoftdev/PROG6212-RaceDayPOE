@@ -31,20 +31,42 @@ jobs:
       - name: Checking SQL Structure
         run: |
           echo "Checking CREATE TABLE..."
-          grep -qi "CREATE TABLE" "docs/Part 1.sql" || {
+          grep -qi "CREATE[[:space:]]\+TABLE" "docs/Part 1.sql" || {
             echo "CREATE TABLE missing"
             exit 1
           }
 
           echo "Checking PRIMARY KEY..."
-          grep -qi "PRIMARY KEY" "docs/Part 1.sql" || {
+          grep -qi "PRIMARY[[:space:]]\+KEY" "docs/Part 1.sql" || {
             echo "PRIMARY KEY missing"
             exit 1
           }
 
           echo "Checking FOREIGN KEY..."
-          grep -qi "FOREIGN KEY" "docs/Part 1.sql" || {
+          grep -qi "FOREIGN[[:space:]]\+KEY" "docs/Part 1.sql" || {
             echo "FOREIGN KEY missing"
+            exit 1
+          }
+
+          echo "Checking allowed roles..."
+          if grep -Eiq "['"]Admin['"]|\bAdmin\b" "docs/Part 1.sql"; then
+            echo "Invalid role found: Admin"
+            exit 1
+          fi
+
+          if grep -Eiq "['"](?!Organiser|Participant)['"][[:space:]]*[,)]" "docs/Part 1.sql"; then
+            echo "Possible invalid role value found"
+            exit 1
+          fi
+
+          echo "Checking required roles..."
+          grep -qi "Organiser" "docs/Part 1.sql" || {
+            echo "Organiser role missing"
+            exit 1
+          }
+
+          grep -qi "Participant" "docs/Part 1.sql" || {
+            echo "Participant role missing"
             exit 1
           }
 
