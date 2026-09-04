@@ -49,7 +49,7 @@ jobs:
           }
 
           echo "Checking allowed roles..."
-          if grep -Eiq "['"]Admin['"]|\bAdmin\b" "docs/Part 1.sql"; then
+          if grep -Eiq "\bAdmin\b" "docs/Part 1.sql"; then
             echo "Invalid role found: Admin"
             exit 1
           fi
