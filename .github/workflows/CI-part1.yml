@@ -37,6 +37,8 @@ jobs:
           test -f "docs/Part 1.sql" || exit 1
           test -f "README.md" || exit 1
 
-      - name: Checking that CREATE TABLE exists
+      - name: Checking SQL structure
         run: |
           grep -qi "CREATE TABLE" "docs/Part 1.sql" || exit 1
+          grep -qi "PRIMARY KEY" "docs/Part 1.sql" || exit 1
+          grep -qi "FOREIGN KEY" "docs/Part 1.sql" || exit 1
