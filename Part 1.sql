@@ -10,6 +10,10 @@ CREATE TABLE Users(
 	CreatedAt DATETIME
 );
 
+ALTER TABLE Users
+ADD CONSTRAINT CHK_Users_Role
+    CHECK (Role IN ('Admin', 'Organiser', 'Participant'));
+
 Create TABLE Events(
 	EventID INT PRIMARY KEY,
 );
