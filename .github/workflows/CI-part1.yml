@@ -23,7 +23,7 @@ jobs:
 
       - name: Checking Required Files
         run: |
-          test -f "docs/API Endpoint Plan(Updated).pdf" || exit 1
+          test -f "docs/API Plan.pdf" || exit 1
           test -f "docs/ERDDIAGRAM.drawio.png" || exit 1
           test -f "docs/Part 1.sql" || exit 1
           test -f "README.md" || exit 1
