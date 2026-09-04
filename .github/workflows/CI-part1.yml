@@ -17,6 +17,7 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
 
@@ -24,28 +25,29 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
+      # Checks that the docs folder exists
       - name: Checking Docs folder
         run: |
           test -d "docs" || exit 1
 
-      # Runs a set of commands using the runners shell
+      # Checks that the required files exist
       - name: Checking the required files
         run: |
           test -f "docs/API Endpoint Plan(Updated).pdf" || exit 1
           test -f "docs/ERDDIAGRAM.drawio.png" || exit 1
           test -f "docs/Part 1.sql" || exit 1
           test -f "README.md" || exit 1
-      - name: Checking SQL structure
-      run: |
-        echo "Checking CREATE TABLE..."
-        grep -qi "CREATE TABLE" "docs/Part 1.sql" || { echo "CREATE TABLE missing"; exit 1; }
-    
-        echo "Checking PRIMARY KEY..."
-        grep -qi "PRIMARY KEY" "docs/Part 1.sql" || { echo "PRIMARY KEY missing"; exit 1; }
-    
-        echo "Checking FOREIGN KEY..."
-        grep -qi "FOREIGN KEY" "docs/Part 1.sql" || { echo "FOREIGN KEY missing"; exit 1; }
-    
-        echo "All SQL structure checks passed."
 
+      # Checks the SQL structure
+      - name: Checking SQL structure
+        run: |
+          echo "Checking CREATE TABLE..."
+          grep -qi "CREATE TABLE" "docs/Part 1.sql" || { echo "CREATE TABLE missing"; exit 1; }
+
+          echo "Checking PRIMARY KEY..."
+          grep -qi "PRIMARY KEY" "docs/Part 1.sql" || { echo "PRIMARY KEY missing"; exit 1; }
+
+          echo "Checking FOREIGN KEY..."
+          grep -qi "FOREIGN KEY" "docs/Part 1.sql" || { echo "FOREIGN KEY missing"; exit 1; }
+
+          echo "All SQL structure checks passed."
