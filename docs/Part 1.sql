@@ -13,7 +13,7 @@ CREATE TABLE Users (
 INSERT INTO Users
     (UserID, FirstName, LastName, Email, PasswordHash, Role, CreatedAt)
 VALUES
-    (1, 'Naledi', 'Khumalo', 'naledi.khumalo@raceday.co.za', 'hashed_pw_1', 'Admin', GETDATE()),
+    (1, 'Naledi', 'Khumalo', 'naledi.khumalo@raceday.co.za', 'hashed_pw_1', 'Organiser', GETDATE()),
     (2, 'Thabo', 'Mokoena', 'thabo.mokoena@raceday.co.za', 'hashed_pw_2', 'Organiser', GETDATE()),
     (3, 'Lindiwe', 'Nkosi', 'lindiwe.nkosi@raceday.co.za', 'hashed_pw_3', 'Organiser', GETDATE()),
     (4, 'Sipho', 'Dlamini', 'sipho.dlamini@example.com', 'hashed_pw_4', 'Participant', GETDATE()),
