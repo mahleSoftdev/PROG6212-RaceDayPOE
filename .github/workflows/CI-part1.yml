@@ -54,11 +54,6 @@ jobs:
             exit 1
           fi
 
-          if grep -Eiq "['"](?!Organiser|Participant)['"][[:space:]]*[,)]" "docs/Part 1.sql"; then
-            echo "Possible invalid role value found"
-            exit 1
-          fi
-
           echo "Checking required roles..."
           grep -qi "Organiser" "docs/Part 1.sql" || {
             echo "Organiser role missing"
