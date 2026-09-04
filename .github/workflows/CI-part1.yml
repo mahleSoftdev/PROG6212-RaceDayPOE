@@ -1,53 +1,51 @@
-# This is a basic workflow to help you get started with Actions
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: ["main"]
+
   pull_request:
-    branches: [ "main" ]
-  # Allows you to run this workflow manually from the Actions tab
+    branches: ["main"]
+
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Checks that the docs folder exists
       - name: Checking Docs folder
         run: |
           test -d "docs" || exit 1
 
-      # Checks that the required files exist
-      - name: Checking the required files
+      - name: Checking Required Files
         run: |
           test -f "docs/API Endpoint Plan(Updated).pdf" || exit 1
           test -f "docs/ERDDIAGRAM.drawio.png" || exit 1
           test -f "docs/Part 1.sql" || exit 1
           test -f "README.md" || exit 1
 
-      # Checks the SQL structure
-      - name: Checking SQL structure
+      - name: Checking SQL Structure
         run: |
           echo "Checking CREATE TABLE..."
-          grep -qi "CREATE TABLE" "docs/Part 1.sql" || { echo "CREATE TABLE missing"; exit 1; }
+          grep -qi "CREATE TABLE" "docs/Part 1.sql" || {
+            echo "CREATE TABLE missing"
+            exit 1
+          }
 
           echo "Checking PRIMARY KEY..."
-          grep -qi "PRIMARY KEY" "docs/Part 1.sql" || { echo "PRIMARY KEY missing"; exit 1; }
+          grep -qi "PRIMARY KEY" "docs/Part 1.sql" || {
+            echo "PRIMARY KEY missing"
+            exit 1
+          }
 
           echo "Checking FOREIGN KEY..."
-          grep -qi "FOREIGN KEY" "docs/Part 1.sql" || { echo "FOREIGN KEY missing"; exit 1; }
+          grep -qi "FOREIGN KEY" "docs/Part 1.sql" || {
+            echo "FOREIGN KEY missing"
+            exit 1
+          }
 
           echo "All SQL structure checks passed."
