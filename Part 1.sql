@@ -9,14 +9,13 @@ CREATE TABLE Users(
 	Role NVARCHAR,
 	CreatedAt DATETIME
 );
-ALTER TABLE Users
-ALTER COLUMN Email NVARCHAR(255);
 
-ALTER TABLE Users
-ALTER COLUMN Role NVARCHAR(50);
-
-ALTER TABLE Users
-ALTER COLUMN PasswordHash NVARCHAR(255);
+INSERT INTO Users (UserID, FirstName, LastName, Email, PasswordHash, Role, CreatedAt) VALUES
+(1, 'Naledi', 'Khumalo', 'naledi.khumalo@raceday.co.za', 'hashed_pw_1', 'Admin', GETDATE()),
+(2, 'Thabo', 'Mokoena', 'thabo.mokoena@raceday.co.za', 'hashed_pw_2', 'Organiser', GETDATE()),
+(3, 'Lindiwe', 'Nkosi', 'lindiwe.nkosi@raceday.co.za', 'hashed_pw_3', 'Organiser', GETDATE()),
+(4, 'Sipho', 'Dlamini', 'sipho.dlamini@example.com', 'hashed_pw_4', 'Participant', GETDATE()),
+(5, 'Amahle', 'Van Wyk', 'amahle.vanwyk@example.com', 'hashed_pw_5', 'Participant', GETDATE());
 
 Create TABLE Events(
 	EventID INT PRIMARY KEY,
@@ -37,6 +36,12 @@ ALTER TABLE Events
 ADD CONSTRAINT FK_Events_Venues
     FOREIGN KEY (VenueID) REFERENCES Venues(VenueID);
 
+INSERT INTO Events (EventID, OrganiserID, VenueID, Name, Description, EventDate, CreatedAt) VALUES
+(1, 2, 1, 'Pretoria 10K Challenge', 'Annual road running event through the city.', '2026-10-10', GETDATE()),
+(2, 3, 2, 'Cape Town Trail Run', 'Scenic trail run through Kirstenbosch Gardens.', '2026-11-15', GETDATE()),
+(3, 2, 3, 'Durban Beachfront Marathon', 'Full and half marathon along the Durban coastline.', '2026-12-05', GETDATE());
+
+
 CREATE TABLE Venues (
     VenueID INT PRIMARY KEY,
     Name NVARCHAR(150),
@@ -46,6 +51,11 @@ CREATE TABLE Venues (
     Latitude DECIMAL(9,6),
     Longitude DECIMAL(9,6)
 );
+
+INSERT INTO Venues (VenueID, Name, AddressLine, City, Province, Latitude, Longitude) VALUES
+(1, 'Zwartkops Raceway', '1 Kudu Road', 'Pretoria', 'Gauteng', -25.834200, 28.101600),
+(2, 'Kirstenbosch Gardens', 'Rhodes Drive', 'Cape Town', 'Western Cape', -33.988400, 18.432500),
+(3, 'Moses Mabhida Stadium', '44 Isaiah Ntshangase Road', 'Durban', 'KwaZulu-Natal', -29.830800, 31.030100);
 
 CREATE TABLE Categories (
     CategoryID INT PRIMARY KEY,
@@ -57,6 +67,13 @@ CREATE TABLE Categories (
     CONSTRAINT FK_Categories_Events
         FOREIGN KEY (EventID) REFERENCES Events(EventID)
 );
+
+INSERT INTO Categories (CategoryID, EventID, Name, DistanceKm, MaxParticipants, EntryFee) VALUES
+(1, 1, '10km Individual', 10.00, 200, 150.00),
+(2, 1, '5km Fun Run', 5.00, 300, 80.00),
+(3, 2, 'Trail Run 15km', 15.00, 150, 200.00),
+(4, 3, 'Half Marathon', 21.10, 500, 250.00),
+(5, 3, 'Full Marathon', 42.20, 300, 350.00);
 
 CREATE TABLE Enrolments (
     EnrolmentID INT PRIMARY KEY,
@@ -70,6 +87,12 @@ CREATE TABLE Enrolments (
         FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
 );
 
+INSERT INTO Enrolments (EnrolmentID, UserID, CategoryID, EnrolmentDate, Status) VALUES
+(1, 4, 1, GETDATE(), 'Confirmed'),
+(2, 5, 2, GETDATE(), 'Confirmed'),
+(3, 4, 4, GETDATE(), 'Pending'),
+(4, 5, 5, GETDATE(), 'Confirmed');
+
 CREATE TABLE Results (
     ResultID INT PRIMARY KEY,
     EnrolmentID INT NOT NULL,
@@ -80,15 +103,7 @@ CREATE TABLE Results (
         FOREIGN KEY (EnrolmentID) REFERENCES Enrolments(EnrolmentID)
 );
 
-
-
-
-
-
-
-
-
-
-
-
-
+INSERT INTO Results (ResultID, EnrolmentID, FinishTime, Position, RecordedAt) VALUES
+(1, 1, '00:45:32', 3, GETDATE()),
+(2, 2, '00:22:10', 1, GETDATE()),
+(3, 4, '03:15:47', 5, GETDATE());
