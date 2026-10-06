@@ -1,23 +1,35 @@
 CREATE DATABASE racedayDB;
 
-CREATE TABLE Users (
-    UserID INT PRIMARY KEY,
+CREATE TABLE Organisers (
+    OrganiserID INT PRIMARY KEY,
     FirstName NVARCHAR(100),
     LastName NVARCHAR(100),
     Email NVARCHAR(255) UNIQUE,
     PasswordHash NVARCHAR(100),
-    Role NVARCHAR(50),
     CreatedAt DATETIME
 );
 
-INSERT INTO Users
-    (UserID, FirstName, LastName, Email, PasswordHash, Role, CreatedAt)
+INSERT INTO Organisers
+    (OrganiserID, FirstName, LastName, Email, PasswordHash, CreatedAt)
 VALUES
-    (1, 'Naledi', 'Khumalo', 'naledi.khumalo@raceday.co.za', 'hashed_pw_1', 'Organiser', GETDATE()),
-    (2, 'Thabo', 'Mokoena', 'thabo.mokoena@raceday.co.za', 'hashed_pw_2', 'Organiser', GETDATE()),
-    (3, 'Lindiwe', 'Nkosi', 'lindiwe.nkosi@raceday.co.za', 'hashed_pw_3', 'Organiser', GETDATE()),
-    (4, 'Sipho', 'Dlamini', 'sipho.dlamini@example.com', 'hashed_pw_4', 'Participant', GETDATE()),
-    (5, 'Amahle', 'Van Wyk', 'amahle.vanwyk@example.com', 'hashed_pw_5', 'Participant', GETDATE());
+    (1, 'Naledi', 'Khumalo', 'naledi.khumalo@raceday.co.za', 'hashed_pw_1', GETDATE()),
+    (2, 'Thabo', 'Mokoena', 'thabo.mokoena@raceday.co.za', 'hashed_pw_2', GETDATE()),
+    (3, 'Lindiwe', 'Nkosi', 'lindiwe.nkosi@raceday.co.za', 'hashed_pw_3', GETDATE());
+
+CREATE TABLE Participants (
+    ParticipantID INT PRIMARY KEY,
+    FirstName NVARCHAR(100),
+    LastName NVARCHAR(100),
+    Email NVARCHAR(255) UNIQUE,
+    PasswordHash NVARCHAR(100),
+    CreatedAt DATETIME
+);
+
+INSERT INTO Participants
+    (ParticipantID, FirstName, LastName, Email, PasswordHash, CreatedAt)
+VALUES
+    (1, 'Sipho', 'Dlamini', 'sipho.dlamini@example.com', 'hashed_pw_4', GETDATE()),
+    (2, 'Amahle', 'Van Wyk', 'amahle.vanwyk@example.com', 'hashed_pw_5', GETDATE());
 
 CREATE TABLE Venues (
     VenueID INT PRIMARY KEY,
@@ -45,8 +57,8 @@ CREATE TABLE Events (
     EventDate DATE,
     CreatedAt DATETIME,
 
-    CONSTRAINT FK_Events_Users
-        FOREIGN KEY (OrganiserID) REFERENCES Users(UserID),
+    CONSTRAINT FK_Events_Organisers
+        FOREIGN KEY (OrganiserID) REFERENCES Organisers(OrganiserID),
 
     CONSTRAINT FK_Events_Venues
         FOREIGN KEY (VenueID) REFERENCES Venues(VenueID)
@@ -90,25 +102,25 @@ VALUES
 
 CREATE TABLE Enrolments (
     EnrolmentID INT PRIMARY KEY,
-    UserID INT NOT NULL,
+    ParticipantID INT NOT NULL,
     CategoryID INT NOT NULL,
     EnrolmentDate DATETIME,
     Status NVARCHAR(50),
 
-    CONSTRAINT FK_Enrolments_Users
-        FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    CONSTRAINT FK_Enrolments_Participants
+        FOREIGN KEY (ParticipantID) REFERENCES Participants(ParticipantID),
 
     CONSTRAINT FK_Enrolments_Categories
         FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
 );
 
 INSERT INTO Enrolments
-    (EnrolmentID, UserID, CategoryID, EnrolmentDate, Status)
+    (EnrolmentID, ParticipantID, CategoryID, EnrolmentDate, Status)
 VALUES
-    (1, 4, 1, GETDATE(), 'Confirmed'),
-    (2, 5, 2, GETDATE(), 'Confirmed'),
-    (3, 4, 4, GETDATE(), 'Pending'),
-    (4, 5, 5, GETDATE(), 'Confirmed');
+    (1, 1, 1, GETDATE(), 'Confirmed'),
+    (2, 2, 2, GETDATE(), 'Confirmed'),
+    (3, 1, 4, GETDATE(), 'Pending'),
+    (4, 2, 5, GETDATE(), 'Confirmed');
 
 CREATE TABLE Results (
     ResultID INT PRIMARY KEY,
