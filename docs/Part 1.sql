@@ -1,5 +1,7 @@
 CREATE DATABASE racedayDB;
+GO
 USE racedayDB;
+GO
 
 -- Organisers are provisioned accounts (they cannot self-register). Separate from Participants.
 CREATE TABLE Organisers (
