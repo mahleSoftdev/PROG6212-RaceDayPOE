@@ -123,7 +123,7 @@ The workflow in `.github/workflows/ci.yml` runs on every push and pull request. 
 
 ## Demo video
 
-**YouTube (unlisted):** _paste your link here before submitting_
+**YouTube (unlisted):** https://youtu.be/O2BhzFLNiqs
 
 ## Security notes
 
