@@ -11,17 +11,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Install .NET 8 SDK
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+
       - name: Verify required Part 1 documentation
         run: |
           test -f "docs/Part 1.sql"
           test -f "docs/ERD-diagram.png"
-          test -f "docs/API-Plan.docx"
-          test -f "docs/API Plan.pdf"
+          test -f "docs/API Plan.docx"
+          test -f "docs/API-Plan.pdf"
           test -f "README.md"
+
       - name: Validate SQL schema requirements
         run: |
           grep -qi "CREATE[[:space:]]\+TABLE" "docs/Part 1.sql"
@@ -30,9 +33,12 @@ jobs:
           grep -qi "CREATE TABLE Organisers" "docs/Part 1.sql"
           grep -qi "CREATE TABLE Participants" "docs/Part 1.sql"
           if grep -Eiq "\bAdmin\b" "docs/Part 1.sql"; then echo "Unexpected third application role"; exit 1; fi
+
       - name: Restore dependencies
         run: dotnet restore RaceDayPOE/RaceDayPOE.sln
+
       - name: Build solution
         run: dotnet build RaceDayPOE/RaceDayPOE.sln --configuration Release --no-restore
+
       - name: Run unit and integration tests
         run: dotnet test RaceDayPOE/RaceDayPOE.sln --configuration Release --no-build --logger "console;verbosity=normal"
