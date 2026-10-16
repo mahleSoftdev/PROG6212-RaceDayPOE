@@ -115,7 +115,11 @@ The workflow in `.github/workflows/ci.yml` runs on every push and pull request. 
 
 **Green build screenshot (replace with a screenshot of your latest successful run in the GitHub Actions tab):**
 
-![Successful GitHub Actions build](docs/ci-screenshot.png)
+![Successful GitHub Actions build Part 1](docs/ci-screenshot.png)
+
+![Successful GitHub Actions build Part 2](docs/CI-Screenshot2.png)
+
+
 
 ## Demo video
 
