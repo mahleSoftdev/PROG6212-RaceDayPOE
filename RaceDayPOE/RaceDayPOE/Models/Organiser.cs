@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RaceDayPOE.Models
@@ -25,7 +25,7 @@ namespace RaceDayPOE.Models
         [Required, MaxLength(255)]
         public string Email { get; set; } = string.Empty;
 
-        /// <summary>BCrypt hash of the password. The plain-text password is never stored.</summary>
+        /// <summary>ASP.NET Core Identity password hash (PBKDF2). The plain-text password is never stored.</summary>
         [Required, MaxLength(100)]
         public string PasswordHash { get; set; } = string.Empty;
 

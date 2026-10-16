@@ -1,98 +1,130 @@
-# PROG6212-RaceDayPOE
+# RaceDayPOE
 
-This is an individual project built progressively across three parts. The three parts come together to produce a fully containerised, cloud-aware, API-driven platform that reflects real-world software development practices.
+RaceDay is an ASP.NET Core 8 Web API for managing race events, venues, categories, participant enrolments, and race results. The API uses Entity Framework Core with SQL Server and a Code-First data model.
 
-RaceDay is a race event management platform that allows Organisers to create and manage running events, venues, and categories, while Participants can browse events and enrol in categories of their choice.
+## Roles and account provisioning
 
-- **YouTube Part 1:** https://youtu.be/bsr2mjv3woo
-- **GitHub:** https://github.com/mahleSoftdev/PROG6212-RaceDayPOE
+The application has exactly two account roles, stored in separate database tables.
 
-## Project Overview
+### Participant
 
-RaceDay allows event Organisers to publish running events at specific venues, break each event into distance-based categories (e.g. 5km, 10km, Half Marathon), and allow Participants to enrol in a category of their choice. Once an event has taken place, results (finish time and position) can be recorded against each participant's enrolment.
+- Registers through `POST /api/auth/register`.
+- Logs in with an email, password, and `Participant` role.
+- Views and updates their own profile.
+- Browses events, venues, and categories.
+- Enrols in a category and cancels their own enrolments.
+- Views their own results.
 
-The system is built around a relational database (`racedayDB`) with the following core entities: **Users**, **Venues**, **Events**, **Categories**, **Enrolments**, and **Results** — exposed through a RESTful API.
+### Organiser
 
----
+- Does not self-register through the public registration endpoint.
+- Must receive an account through the controlled provisioning process.
+- Logs in with an email, password, and `Organiser` role.
+- Creates and manages events they own, plus their event categories.
+- Manages venues, views enrolments for their events, and records results for their events.
 
-## User Roles
+An account exists in either `Organisers` or `Participants`, never both. The API ignores any client attempt to set a role through profile updates. Passwords are stored as ASP.NET Core Identity password hashes. The API does not return password hashes.
 
-The platform is built around two application roles:
+Organiser provisioning uses a deployment secret named `Security:OrganiserProvisioningKey`. In **Development** a throw-away key (`dev-only-provisioning-key-change-me`) is supplied by `appsettings.Development.json` so the API can be demonstrated and marked locally. In any other environment, set it through user secrets or an environment variable, never in source control. For example, configure the environment variable `Security__OrganiserProvisioningKey` before starting the API. Call `POST /api/auth/provision-organiser` with the `X-Provisioning-Key` header and the required request body. Give the new Organiser their initial password through a secure channel and have them change it through `PUT /api/users/me/password` before normal use. The API deliberately does not expose a public Organiser registration endpoint.
 
-### 🏁 Organiser
-An Organiser is a user responsible for creating and managing events, venues, and everything associated with them.
+## Requirements
 
-An Organiser can:
-- Create, update, and delete events they own
-- Create, update, and delete categories within their own events
-- Create, update, and delete venues
-- View all participants enrolled in their events
-- Record, update, and delete race results for participants in their events
-- View any user's profile
+- .NET 8 SDK
+- SQL Server Developer/Express or another compatible SQL Server instance
+- Visual Studio 2022 or another .NET IDE
 
-### 🏃 Participant
-A Participant is a member of the public who registers an account to take part in races.
+## Configuration and setup
 
-A Participant can:
-- Browse all publicly available events, venues, and categories
-- Enrol in a category for a specific event
-- View and cancel their own enrolments
-- View their own race results across events they've participated in
+1. Configure `ConnectionStrings:RaceDayDb` in `RaceDayPOE/RaceDayPOE/appsettings.json` or through an environment variable named `ConnectionStrings__RaceDayDb`.
+2. Configure `Security__OrganiserProvisioningKey` through a secret store or environment variable before provisioning Organisers.
+3. From the repository root, install the EF Core CLI tool if required: `dotnet tool install --global dotnet-ef --version 8.*`.
+4. Apply the committed Code-First migration to a new, empty database: `dotnet ef database update --project RaceDayPOE/RaceDayPOE/RaceDayPOE.csproj`.
+5. Run the API: `dotnet run --project RaceDayPOE/RaceDayPOE/RaceDayPOE.csproj`.
+6. Swagger UI opens automatically (`launchUrl` is `swagger`). If it does not, browse to the URL printed in the console followed by `/swagger`, for example `http://localhost:5258/swagger`.
 
-> `Public` and `Authenticated` in the API plan describe access levels, not roles — every account is created with one of the two roles above. See [`docs/API_Plan.pdf`](docs/API_Plan.pdf) for the full breakdown of role-based access per endpoint.
+The SQL schema in `docs/Part 1.sql` and the ERD in `docs/ERD-diagram.png` are the reference for table names, fields, keys, and relationships. The committed initial migration is intended for a new, empty database. If you already created `racedayDB` from the Part 1 SQL script, back it up and baseline the migration history before applying migrations. Do not run the initial create migration against an existing database because its tables already exist. The sample password values (`hashed_pw_*`) in the Part 1 SQL data are placeholders, not valid Identity hashes. Replace them with hashes generated by the application before using those sample accounts to log in.
 
-## Setup Instructions
+### Quick start: creating your first Organiser (Swagger, Development)
 
-### Prerequisites
+1. Open `POST /api/auth/provision-organiser` in Swagger and click **Try it out**.
+2. Set the `X-Provisioning-Key` header to `dev-only-provisioning-key-change-me`.
+3. Use a body such as `{ "firstName": "Naledi", "lastName": "Khumalo", "email": "naledi@raceday.co.za", "temporaryPassword": "TemporaryPass123!" }`.
+4. Log in with `POST /api/organisers/login` (`role` = `Organiser`), then create a venue, event and category.
+5. Register a Participant with `POST /api/auth/register`, log in as that Participant (same browser, so the session cookie is kept) and enrol.
 
-Before running this project, make sure you have the following installed:
+## Authentication and sessions
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download) (or the version used in this project)
-- [SQL Server](https://www.microsoft.com/sql-server) (Developer or Express edition) or SQL Server hosted via Docker
-- [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms) (recommended, for running the database script)
-- [Git](https://git-scm.com/)
-- An IDE such as [Visual Studio](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/)
+`POST /api/auth/login` requires `email`, `password`, and `role`. `role` must be `Participant` or `Organiser`. Role-specific routes are also available: `POST /api/participants/login` requires `role: Participant`, and `POST /api/organisers/login` requires `role: Organiser`. On success, the API issues an HTTP-only authentication cookie and maintains server-side session state. Use the same browser or a cookie-preserving HTTP client for subsequent protected calls. `POST /api/auth/logout` clears the session and authentication cookie. Authentication cookies expire after 30 minutes of inactivity/expiry policy.
 
+For local Swagger testing, call login first, then test protected endpoints in the same browser session. Login is unauthenticated by design because users must be able to establish a session. It is not a general-purpose public data endpoint. Registration is limited to Participants.
 
-## API Overview
+## Endpoint overview
 
-The full list of endpoints, HTTP methods, required roles, request bodies, and expected responses is documented in [`docs/API_Plan.pdf`](docs/API_Plan.pdf).
-
-At a high level, the API exposes endpoints for:
-
-| Resource | Description | Roles Involved |
+| Endpoint | Purpose | Access |
 |---|---|---|
-| `/api/auth` | User registration and login | Public |
-| `/api/users` | User profile management | Authenticated, Organiser |
-| `/api/events` | Creating, viewing, updating, and deleting events | Public, Organiser |
-| `/api/categories` | Managing race categories per event | Public, Organiser |
-| `/api/enrolments` | Participant enrolments into categories | Participant, Organiser |
-| `/api/results` | Recording and retrieving race results | Participant, Organiser |
-| `/api/venues` | Managing race venues | Public, Organiser |
+| `POST /api/auth/register` | Register Participant | Unauthenticated |
+| `POST /api/auth/login` | Login as either provisioned role | Unauthenticated, role required in body |
+| `POST /api/participants/login` | Participant login | Participant role required in body |
+| `POST /api/organisers/login` | Organiser login | Organiser role required in body |
+| `POST /api/auth/provision-organiser` | Provision an Organiser | Provisioning secret required |
+| `POST /api/auth/logout` | End session | Authenticated |
+| `GET/PUT /api/users/me` | View/update own profile | Authenticated |
+| `PUT /api/users/me/password` | Change own password after verifying current password | Authenticated |
+| `GET /api/events` and `GET /api/events/{id}` | Browse events | Public |
+| `POST/PUT/DELETE /api/events` | Manage events | Organiser, owner checks apply |
+| `GET /api/categories` | Browse categories | Public |
+| `POST/PUT/DELETE /api/categories` | Manage categories | Organiser, owner checks apply |
+| `GET /api/venues` | Browse venues | Public |
+| `POST/PUT/DELETE /api/venues` | Manage venues | Organiser |
+| `POST /api/enrolments` | Enrol in category | Participant |
+| `GET /api/enrolments` | View own enrolments or enrolments for owned events | Authenticated, role-scoped |
+| `PUT /api/enrolments/{id}/cancel` | Cancel own enrolment | Participant, owner check applies |
+| `GET /api/results` | View own results or results for owned events | Authenticated, role-scoped |
+| `POST/PUT/DELETE /api/results` | Manage results | Organiser, event ownership applies |
 
-Authentication is handled via bearer tokens issued at login, with role-based authorization enforced per endpoint. Only two application roles exist: **Organiser** and **Participant**.
+Every request body uses DTO validation. Required fields are marked with validation attributes and appear in Swagger's OpenAPI schema. Swagger endpoint descriptions are generated from XML comments.
 
----
+## Project structure
 
-## CI/CD Pipeline
+- `Models`: EF Core entities and enumerations.
+- `Data/RaceDayDbContext.cs`: DbSets, relationships, constraints, and schema configuration.
+- `DTOs`: request and response contracts with validation.
+- `Controllers`: HTTP endpoints and access policies.
+- `RaceDayPOE.Tests`: API integration tests.
+- `docs`: Part 1 SQL, ERD, and API plan.
 
-This project uses **GitHub Actions** to automatically validate the repository on every push and pull request to `main`. The workflow (`.github/workflows/ci.yml`) checks that:
+## Build and test
 
-- The `docs` folder exists
-- Required submission files are present (`API_Plan.pdf`, `ERDDIAGRAM_drawio.png`, `Part_1.sql`, `README.md`)
-- The SQL script contains valid `CREATE TABLE` statements
+From the repository root:
 
-**CI/CD run screenshot:**
+```bash
+dotnet restore RaceDayPOE/RaceDayPOE.sln
+dotnet build RaceDayPOE/RaceDayPOE.sln --configuration Release
+dotnet test RaceDayPOE/RaceDayPOE.sln --configuration Release
+```
 
+The GitHub Actions workflow runs documentation checks, SQL structure checks, a Release build, and tests on every push and pull request. Tests use an isolated in-memory database and do not require a local SQL Server instance.
 
-![CI/CD Pipeline Screenshot](docs/ci-screenshot.png)
+The tests cover, with both success and failure cases: registration and login (duplicate email, bad input, wrong password, invalid role, logout), organiser provisioning, profile and password changes, event management (create, update, delete, ownership), categories, role rejection in both directions (Participant on Organiser endpoints and Organiser on Participant endpoints), unauthenticated access, enrolments (recorded against participant, event and category; duplicates; capacity; cancellation) and results.
 
----
+> `RaceDayPOE.sln` is the solution used by CI and by `dotnet` on .NET SDK 8. `RaceDayPOE.slnx` is the newer format and needs .NET SDK 9 or later; either opens the same two projects.
 
-## Video Demonstration
+## CI/CD
 
-An unlisted YouTube video demonstrating the running API, code structure, endpoints, authentication, and unit tests can be found here:
+The workflow in `.github/workflows/ci.yml` runs on every push and pull request. It builds the solution and runs every test.
 
-📺 **[Watch the demo video](https://youtu.be/bsr2mjv3woo)**
+**Green build screenshot (replace with a screenshot of your latest successful run in the GitHub Actions tab):**
 
----
+![Successful GitHub Actions build](docs/ci-screenshot.png)
+
+## Demo video
+
+**YouTube (unlisted):** _paste your link here before submitting_
+
+## Security notes
+
+- Never commit production connection strings or provisioning keys.
+- Do not use plain-text passwords or hand-written placeholder hashes for provisioned accounts.
+- Restrict provisioning-key access to trusted deployment operators and rotate the key if exposed.
+- Use HTTPS outside local development.
+- Review EF Core migrations before applying them to databases with existing data.
