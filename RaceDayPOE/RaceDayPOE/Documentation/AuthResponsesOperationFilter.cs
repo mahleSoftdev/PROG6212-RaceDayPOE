@@ -5,10 +5,9 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace RaceDayPOE.Documentation;
 
-/// <summary>
-/// Adds the 400 / 401 / 403 responses to every Swagger operation that can return them,
-/// so each endpoint documents the responses it returns.
-/// </summary>
+//Adds the 400 / 401 / 403 responses to every Swagger operation that can return them,
+//so each endpoint documents the responses it returns.
+
 public sealed class AuthResponsesOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)

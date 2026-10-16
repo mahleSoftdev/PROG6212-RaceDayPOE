@@ -17,7 +17,7 @@ public class UsersController : ControllerBase
     private readonly IPasswordHasher<Organiser> _organiserHasher;
     public UsersController(RaceDayDbContext db, IPasswordHasher<Participant> ph, IPasswordHasher<Organiser> oh) => (_db, _participantHasher, _organiserHasher) = (db, ph, oh);
 
-    /// <summary>View the authenticated account's own profile.</summary>
+    //View the authenticated account's own profile.
     [HttpGet("me")]
     public async Task<ActionResult<AccountResponse>> GetMine()
     {
@@ -31,7 +31,7 @@ public class UsersController : ControllerBase
         return o is null ? NotFound() : Ok(new AccountResponse(o.OrganiserID, o.FirstName, o.LastName, o.Email, nameof(UserRole.Organiser), o.CreatedAt));
     }
 
-    /// <summary>Update the authenticated account's own profile. Role and password cannot be changed here.</summary>
+    //Update the authenticated account's own profile. Role and password cannot be changed here.
     [HttpPut("me")]
     public async Task<ActionResult<AccountResponse>> UpdateMine(UpdateProfileRequest request)
     {
@@ -49,23 +49,23 @@ public class UsersController : ControllerBase
         o.FirstName = request.FirstName.Trim(); o.LastName = request.LastName.Trim(); o.Email = email; await _db.SaveChangesAsync();
         return Ok(new AccountResponse(o.OrganiserID, o.FirstName, o.LastName, o.Email, nameof(UserRole.Organiser), o.CreatedAt));
     }
-    /// <summary>Role-specific Organiser profile route retained for the documented API plan.</summary>
+    //Role-specific Organiser profile route retained for the documented API plan.
     [Authorize(Policy = "OrganiserOnly"), HttpGet("/api/organisers/me")]
     public Task<ActionResult<AccountResponse>> GetOrganiserProfile() => GetMine();
 
-    /// <summary>Role-specific Participant profile route retained for the documented API plan.</summary>
+    //Role-specific Participant profile route retained for the documented API plan.
     [Authorize(Policy = "ParticipantOnly"), HttpGet("/api/participants/me")]
     public Task<ActionResult<AccountResponse>> GetParticipantProfile() => GetMine();
 
-    /// <summary>Update the authenticated Organiser's own profile.</summary>
+    //Update the authenticated Organiser's own profile.
     [Authorize(Policy = "OrganiserOnly"), HttpPut("/api/organisers/me")]
     public Task<ActionResult<AccountResponse>> UpdateOrganiserProfile(UpdateProfileRequest request) => UpdateMine(request);
 
-    /// <summary>Update the authenticated Participant's own profile.</summary>
+    //Update the authenticated Participant's own profile.
     [Authorize(Policy = "ParticipantOnly"), HttpPut("/api/participants/me")]
     public Task<ActionResult<AccountResponse>> UpdateParticipantProfile(UpdateProfileRequest request) => UpdateMine(request);
 
-    /// <summary>Change the authenticated user's password after verifying the current password.</summary>
+    //Change the authenticated user's password after verifying the current password.
     [HttpPut("me/password")]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
     {

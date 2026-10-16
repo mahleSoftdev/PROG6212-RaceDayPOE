@@ -9,7 +9,7 @@ using RaceDayPOE.Data;
 
 namespace RaceDayPOE.Tests;
 
-/// <summary>Runs the real API in memory, replacing SQL Server with an isolated EF Core in-memory database.</summary>
+//>Runs the real API in memory, replacing SQL Server with an isolated EF Core in-memory database.
 public sealed class ApiFactory : WebApplicationFactory<Program>
 {
     public const string ProvisioningKey = "test-provisioning-key";

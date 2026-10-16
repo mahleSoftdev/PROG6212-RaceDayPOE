@@ -11,7 +11,7 @@ namespace RaceDayPOE.Controllers;
 [ApiController, Route("api/enrolments"), Authorize]
 public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
 {
-    /// <summary>Participants view their own enrolments. Organisers view enrolments for events they own.</summary>
+    //Participants view their own enrolments. Organisers view enrolments for events they own.
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -20,7 +20,7 @@ public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
         else q = q.Where(x => x.Category != null && x.Category.Event != null && x.Category.Event.OrganiserID == AccountId());
         return Ok(await q.Select(x => new { x.EnrolmentID, x.ParticipantID, ParticipantName = x.Participant!.FirstName + " " + x.Participant.LastName, x.CategoryID, CategoryName = x.Category!.Name, EventName = x.Category.Event!.Name, x.EnrolmentDate, x.Status }).ToListAsync());
     }
-    /// <summary>List enrolments for an event owned by the authenticated Organiser.</summary>
+    //List enrolments for an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpGet("/api/events/{eventId:int}/enrolments")]
     public async Task<IActionResult> GetForEvent(int eventId)
     {
@@ -30,7 +30,7 @@ public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
             .Select(x => new { x.EnrolmentID, x.ParticipantID, ParticipantName = x.Participant!.FirstName + " " + x.Participant.LastName, x.CategoryID, CategoryName = x.Category!.Name, x.EnrolmentDate, x.Status }).ToListAsync());
     }
 
-    /// <summary>Retrieve an enrolment if the caller owns it or owns its event.</summary>
+    //Retrieve an enrolment if the caller owns it or owns its event.
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetOne(int id)
     {
@@ -41,7 +41,7 @@ public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
         return Ok(new { e.EnrolmentID, e.ParticipantID, ParticipantName = e.Participant!.FirstName + " " + e.Participant.LastName, e.CategoryID, CategoryName = e.Category!.Name, EventName = e.Category.Event!.Name, e.EnrolmentDate, e.Status });
     }
 
-    /// <summary>Enrol in a category through the event-specific endpoint.</summary>
+    //Enrol in a category through the event-specific endpoint.
     [Authorize(Policy = "ParticipantOnly"), HttpPost("/api/events/{eventId:int}/enrolments")]
     public async Task<IActionResult> CreateForEvent(int eventId, EnrolmentRequest request)
     {
@@ -50,7 +50,7 @@ public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
         return await Create(request);
     }
 
-    /// <summary>Update enrolment status for an event owned by the authenticated Organiser.</summary>
+    //Update enrolment status for an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpPut("{id:int}")]
     public async Task<IActionResult> UpdateStatus(int id, EnrolmentStatusRequest request)
     {
@@ -60,7 +60,7 @@ public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
         e.Status = request.Status; await db.SaveChangesAsync(); return NoContent();
     }
 
-    /// <summary>Cancel an enrolment as its Participant or as the event's Organiser.</summary>
+    //Cancel an enrolment as its Participant or as the event's Organiser.
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteOrCancel(int id)
     {
@@ -72,7 +72,7 @@ public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
         e.Status = EnrolmentStatus.Cancelled; await db.SaveChangesAsync(); return NoContent();
     }
 
-    /// <summary>Enrol the authenticated Participant in a category.</summary>
+    //Enrol the authenticated Participant in a category.
     [Authorize(Policy = "ParticipantOnly"), HttpPost]
     public async Task<IActionResult> Create(EnrolmentRequest request)
     {
@@ -84,7 +84,7 @@ public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
         var enrolment = new Enrolment { ParticipantID = participantId, CategoryID = request.CategoryID, EnrolmentDate = DateTime.UtcNow, Status = EnrolmentStatus.Confirmed };
         db.Enrolments.Add(enrolment); await db.SaveChangesAsync(); return StatusCode(StatusCodes.Status201Created, new { enrolment.EnrolmentID, enrolment.ParticipantID, enrolment.CategoryID, enrolment.EnrolmentDate, enrolment.Status });
     }
-    /// <summary>Cancel an enrolment owned by the authenticated Participant.</summary>
+    //Cancel an enrolment owned by the authenticated Participant.
     [Authorize(Policy = "ParticipantOnly"), HttpPut("{id:int}/cancel")]
     public async Task<IActionResult> Cancel(int id)
     {

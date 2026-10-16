@@ -1,8 +1,6 @@
 ﻿namespace RaceDayPOE.Models
 {
-    /// <summary>
-    /// The lifecycle state of an enrolment. Stored in the database as text.
-    /// </summary>
+    //The lifecycle state of an enrolment. Stored in the database as text.
     public enum EnrolmentStatus
     {
         Pending,

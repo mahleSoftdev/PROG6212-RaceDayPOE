@@ -22,7 +22,7 @@ public class AuthController : ControllerBase
     public AuthController(RaceDayDbContext db, IPasswordHasher<Participant> participantHasher, IPasswordHasher<Organiser> organiserHasher, IConfiguration configuration)
         => (_db, _participantHasher, _organiserHasher, _configuration) = (db, participantHasher, organiserHasher, configuration);
 
-    /// <summary>Register a Participant account. Organiser self-registration is intentionally unavailable.</summary>
+    //Register a Participant account. Organiser self-registration is intentionally unavailable.
     [AllowAnonymous, HttpPost("register")]
     [ProducesResponseType(typeof(AccountResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<AccountResponse>> Register(RegisterParticipantRequest request)
@@ -37,7 +37,7 @@ public class AuthController : ControllerBase
         return Created("/api/users/me", response);
     }
 
-    /// <summary>Login as a registered Participant or provisioned Organiser. Role is required in the body.</summary>
+    //Login as a registered Participant or provisioned Organiser. Role is required in the body.
     [AllowAnonymous, HttpPost("login")]
     [ProducesResponseType(typeof(AccountResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<AccountResponse>> Login(LoginRequest request)
@@ -69,7 +69,7 @@ public class AuthController : ControllerBase
         return Ok(new AccountResponse(id, firstName, lastName, email, role, created));
     }
 
-    /// <summary>Role-specific Participant login route. The request body must specify Participant as its role.</summary>
+    //Role-specific Participant login route. The request body must specify Participant as its role.
     [AllowAnonymous, HttpPost("/api/participants/login")]
     public Task<ActionResult<AccountResponse>> ParticipantLogin(LoginRequest request)
     {
@@ -77,7 +77,7 @@ public class AuthController : ControllerBase
         return Login(request);
     }
 
-    /// <summary>Role-specific Organiser login route for accounts provisioned by trusted operators.</summary>
+    //Role-specific Organiser login route for accounts provisioned by trusted operators.
     [AllowAnonymous, HttpPost("/api/organisers/login")]
     public Task<ActionResult<AccountResponse>> OrganiserLogin(LoginRequest request)
     {
@@ -85,7 +85,7 @@ public class AuthController : ControllerBase
         return Login(request);
     }
 
-    /// <summary>Provision an Organiser account using the deployment's secret key. This is not public self-registration.</summary>
+    //Provision an Organiser account using the deployment's secret key. This is not public self-registration.
     [AllowAnonymous, HttpPost("provision-organiser")]
     [ProducesResponseType(typeof(AccountResponse), StatusCodes.Status201Created)]
     public async Task<ActionResult<AccountResponse>> ProvisionOrganiser(ProvisionOrganiserRequest request, [FromHeader(Name = "X-Provisioning-Key"), System.ComponentModel.DataAnnotations.Required] string provisioningKey)
@@ -101,7 +101,7 @@ public class AuthController : ControllerBase
         return Created("/api/auth/login", ToResponse(organiser));
     }
 
-    /// <summary>End the authenticated session.</summary>
+    //End the authenticated session.
     [Authorize, HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {

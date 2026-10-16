@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace RaceDayPOE.Tests;
 
-/// <summary>Event and category management, ownership and role enforcement.</summary>
+//Event and category management, ownership and role enforcement.
 public class EventAndCategoryTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;

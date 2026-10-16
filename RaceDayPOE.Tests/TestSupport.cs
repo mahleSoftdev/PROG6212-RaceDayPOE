@@ -9,7 +9,7 @@ using RaceDayPOE.Models;
 
 namespace RaceDayPOE.Tests;
 
-/// <summary>Shared helpers so each test reads as: set up -> act -> assert.</summary>
+//Shared helpers so each test reads as: set up -> act -> assert.
 internal static class TestSupport
 {
     public const string Password = "StrongPassword123!";
@@ -36,7 +36,7 @@ internal static class TestSupport
     public static async Task<JsonElement> ReadAsync(HttpResponseMessage response) =>
         await response.Content.ReadFromJsonAsync<JsonElement>();
 
-    /// <summary>Inserts an Organiser directly (organisers cannot self-register) and returns it.</summary>
+    //Inserts an Organiser directly (organisers cannot self-register) and returns it.
     public static async Task<Organiser> SeedOrganiserAsync(ApiFactory factory)
     {
         using var scope = factory.Services.CreateScope();
@@ -57,7 +57,7 @@ internal static class TestSupport
         return client;
     }
 
-    /// <summary>Registers a new Participant through the public API and logs in.</summary>
+    //Registers a new Participant through the public API and logs in.
     public static async Task<HttpClient> NewParticipantClientAsync(ApiFactory factory)
     {
         var client = NewClient(factory);

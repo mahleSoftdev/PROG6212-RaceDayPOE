@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace RaceDayPOE.Tests;
 
-/// <summary>Registration, login, sessions, provisioning and profile (Part 2: authentication and role-based access).</summary>
+//Registration, login, sessions, provisioning and profile (Part 2: authentication and role-based access).
 public class AccountTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;

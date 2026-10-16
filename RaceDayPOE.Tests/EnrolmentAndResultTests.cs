@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 
 namespace RaceDayPOE.Tests;
 
-/// <summary>Enrolments (participant + event + category link) and results.</summary>
+//Enrolments (participant + event + category link) and results.
 public class EnrolmentAndResultTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;
@@ -25,14 +25,14 @@ public class EnrolmentAndResultTests : IClassFixture<ApiFactory>
         var participant = await TestSupport.NewParticipantClientAsync(_factory);
         var enrolmentId = await TestSupport.EnrolAsync(participant, categoryId);
 
-        // The participant sees it, linked to the right category and event.
+        //The participant sees it, linked to the right category and event.
         var mine = await TestSupport.ReadAsync(await participant.GetAsync("/api/enrolments"));
         Assert.Equal(1, mine.GetArrayLength());
         Assert.Equal(enrolmentId, TestSupport.IntProp(mine[0], "enrolmentID"));
         Assert.Equal(categoryId, TestSupport.IntProp(mine[0], "categoryID"));
         Assert.Equal("Enrolment Event", TestSupport.StringProp(mine[0], "eventName"));
 
-        // The organiser of the event sees it too.
+        //The organiser of the event sees it too.
         var forEvent = await TestSupport.ReadAsync(await organiser.GetAsync($"/api/events/{eventId}/enrolments"));
         Assert.Equal(1, forEvent.GetArrayLength());
         Assert.Equal(enrolmentId, TestSupport.IntProp(forEvent[0], "enrolmentID"));

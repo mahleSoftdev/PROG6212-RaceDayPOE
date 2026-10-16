@@ -11,17 +11,17 @@ namespace RaceDayPOE.Controllers;
 [ApiController, Route("api/events")]
 public class EventsController(RaceDayDbContext db) : ControllerBase
 {
-    /// <summary>Browse events. Public access supports event discovery.</summary>
+    //Browse events. Public access supports event discovery.
     [AllowAnonymous, HttpGet]
     public async Task<IActionResult> GetAll() => Ok(await db.Events.AsNoTracking().Include(e => e.Venue).Include(e => e.Categories).Select(e => new { e.EventID, e.Name, e.Description, e.EventDate, e.EventType, e.VenueID, Venue = e.Venue == null ? null : e.Venue.Name, Categories = e.Categories.Select(c => new { c.CategoryID, c.Name, c.DistanceKm, c.MaxParticipants, c.EntryFee }) }).ToListAsync());
-    /// <summary>Get an event and its categories.</summary>
+    //Get an event and its categories.
     [AllowAnonymous, HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id)
     {
         var e = await db.Events.AsNoTracking().Include(x => x.Venue).Include(x => x.Categories).FirstOrDefaultAsync(x => x.EventID == id);
         return e is null ? NotFound() : Ok(new { e.EventID, e.Name, e.Description, e.EventDate, e.EventType, e.VenueID, Venue = e.Venue?.Name, e.Categories });
     }
-    /// <summary>Create an event owned by the authenticated Organiser.</summary>
+    //Create an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpPost]
     public async Task<IActionResult> Create(EventRequest request)
     {
@@ -30,7 +30,7 @@ public class EventsController(RaceDayDbContext db) : ControllerBase
         var e = new Event { OrganiserID = AccountId(), VenueID = request.VenueID, Name = request.Name.Trim(), Description = request.Description.Trim(), EventDate = request.EventDate.Date, EventType = request.EventType, CreatedAt = DateTime.UtcNow };
         db.Events.Add(e); await db.SaveChangesAsync(); return CreatedAtAction(nameof(Get), new { id = e.EventID }, e);
     }
-    /// <summary>Update an event owned by the authenticated Organiser.</summary>
+    //Update an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, EventRequest request)
     {
@@ -39,7 +39,7 @@ public class EventsController(RaceDayDbContext db) : ControllerBase
         e.Name = request.Name.Trim(); e.Description = request.Description.Trim(); e.EventDate = request.EventDate.Date; e.EventType = request.EventType; e.VenueID = request.VenueID;
         await db.SaveChangesAsync(); return NoContent();
     }
-    /// <summary>Delete an event owned by the authenticated Organiser when no dependent records exist.</summary>
+    //Delete an event owned by the authenticated Organiser when no dependent records exist.
     [Authorize(Policy = "OrganiserOnly"), HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

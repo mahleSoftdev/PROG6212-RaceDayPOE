@@ -3,11 +3,11 @@ using RaceDayPOE.Models;
 
 namespace RaceDayPOE.Data
 {
-    /// <summary>
-    /// The EF Core database context. Each DbSet is one table in racedayDB, and
-    /// OnModelCreating adds the rules (unique emails, enum-to-text, CHECK constraints,
-    /// foreign keys) so the generated schema matches Part 1.sql and the ERD.
-    /// </summary>
+   
+    //The EF Core database context. Each DbSet is one table in racedayDB, and
+    // OnModelCreating adds the rules (unique emails, enum-to-text, CHECK constraints,
+    // foreign keys) so the generated schema matches Part 1.sql and the ERD.
+    
     public class RaceDayDbContext : DbContext
     {
         public RaceDayDbContext(DbContextOptions<RaceDayDbContext> options) : base(options)

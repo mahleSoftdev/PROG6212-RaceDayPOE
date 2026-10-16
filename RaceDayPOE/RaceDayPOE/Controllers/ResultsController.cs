@@ -11,7 +11,7 @@ namespace RaceDayPOE.Controllers;
 [ApiController, Route("api/results"), Authorize]
 public class ResultsController(RaceDayDbContext db) : ControllerBase
 {
-    /// <summary>Participants view their own results. Organisers view results for events they own.</summary>
+    //Participants view their own results. Organisers view results for events they own.
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -20,7 +20,7 @@ public class ResultsController(RaceDayDbContext db) : ControllerBase
         else q = q.Where(r => r.Enrolment!.Category!.Event!.OrganiserID == AccountId());
         return Ok(await q.Select(r => new { r.ResultID, r.EnrolmentID, r.FinishTime, r.Position, r.RecordedAt, ParticipantName = r.Enrolment!.Participant!.FirstName + " " + r.Enrolment.Participant.LastName, EventName = r.Enrolment.Category!.Event!.Name }).ToListAsync());
     }
-    /// <summary>Retrieve one result if the caller owns the participant account or the event.</summary>
+    //Retrieve one result if the caller owns the participant account or the event.
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetOne(int id)
     {
@@ -32,7 +32,7 @@ public class ResultsController(RaceDayDbContext db) : ControllerBase
         return Ok(new { r.ResultID, r.EnrolmentID, r.FinishTime, r.Position, r.RecordedAt, EventName = r.Enrolment!.Category!.Event!.Name });
     }
 
-    /// <summary>Get results for an event owned by the authenticated Organiser.</summary>
+    //Get results for an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpGet("/api/events/{eventId:int}/results")]
     public async Task<IActionResult> GetForEvent(int eventId)
     {
@@ -42,13 +42,13 @@ public class ResultsController(RaceDayDbContext db) : ControllerBase
             .Select(r => new { r.ResultID, r.EnrolmentID, r.FinishTime, r.Position, r.RecordedAt, ParticipantName = r.Enrolment!.Participant!.FirstName + " " + r.Enrolment.Participant.LastName }).ToListAsync());
     }
 
-    /// <summary>Get all results belonging to the authenticated Participant.</summary>
+    //Get all results belonging to the authenticated Participant.
     [Authorize(Policy = "ParticipantOnly"), HttpGet("/api/participants/me/results")]
     public async Task<IActionResult> GetMyResults() => Ok(await db.Results.AsNoTracking().Include(r => r.Enrolment).ThenInclude(e => e!.Category).ThenInclude(c => c!.Event)
         .Where(r => r.Enrolment!.ParticipantID == AccountId())
         .Select(r => new { r.ResultID, r.EnrolmentID, r.FinishTime, r.Position, r.RecordedAt, EventName = r.Enrolment!.Category!.Event!.Name }).ToListAsync());
 
-    /// <summary>Get the result linked to an enrolment if the caller owns the participant account or event.</summary>
+    //Get the result linked to an enrolment if the caller owns the participant account or event.
     [HttpGet("/api/enrolments/{enrolmentId:int}/results")]
     public async Task<IActionResult> GetForEnrolment(int enrolmentId)
     {
@@ -61,7 +61,7 @@ public class ResultsController(RaceDayDbContext db) : ControllerBase
         return result is null ? NotFound() : Ok(result);
     }
 
-    /// <summary>Record a result for an enrolment in an event owned by the authenticated Organiser.</summary>
+    //Record a result for an enrolment in an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpPost]
     public async Task<IActionResult> Create(ResultRequest request)
     {
@@ -73,7 +73,7 @@ public class ResultsController(RaceDayDbContext db) : ControllerBase
         var result = new Result { EnrolmentID = request.EnrolmentID, FinishTime = request.FinishTime, Position = request.Position, RecordedAt = DateTime.UtcNow };
         db.Results.Add(result); await db.SaveChangesAsync(); return StatusCode(StatusCodes.Status201Created, new { result.ResultID, result.EnrolmentID, result.FinishTime, result.Position, result.RecordedAt });
     }
-    /// <summary>Update a result for an event owned by the authenticated Organiser.</summary>
+    //Update a result for an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, ResultRequest request)
     {
@@ -82,7 +82,7 @@ public class ResultsController(RaceDayDbContext db) : ControllerBase
         if (result.EnrolmentID != request.EnrolmentID || request.FinishTime < TimeSpan.Zero || request.FinishTime >= TimeSpan.FromDays(1)) return BadRequest(new { message = "EnrolmentID must match the existing result and FinishTime must be valid." });
         result.FinishTime = request.FinishTime; result.Position = request.Position; result.RecordedAt = DateTime.UtcNow; await db.SaveChangesAsync(); return NoContent();
     }
-    /// <summary>Delete a result belonging to an event owned by the authenticated Organiser.</summary>
+    //Delete a result belonging to an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {

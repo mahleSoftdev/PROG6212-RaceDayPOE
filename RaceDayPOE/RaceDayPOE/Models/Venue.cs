@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RaceDayPOE.Models
 {
-    /// <summary>
-    /// A physical location where events are hosted. This is the "location" of an event.
-    /// Maps to the Venues table in Part 1.sql.
-    /// </summary>
+   
+    //A physical location where events are hosted. This is the "location" of an event.
+    //Maps to the Venues table in Part 1.sql.
+ 
     [Table("Venues")]
     public class Venue
     {
@@ -25,15 +25,15 @@ namespace RaceDayPOE.Models
         [Required, MaxLength(100)]
         public string Province { get; set; } = string.Empty;
 
-        /// <summary>Latitude in decimal degrees, DECIMAL(9,6).</summary>
+        //Latitude in decimal degrees, DECIMAL(9,6)
         [Column(TypeName = "decimal(9,6)")]
         public decimal Latitude { get; set; }
 
-        /// <summary>Longitude in decimal degrees, DECIMAL(9,6).</summary>
+        //Longitude in decimal degrees, DECIMAL(9,6)].
         [Column(TypeName = "decimal(9,6)")]
         public decimal Longitude { get; set; }
 
-        /// <summary>Events hosted at this venue (one venue hosts many events).</summary>
+        //Events hosted at this venue (one venue hosts many events).
         public ICollection<Event> Events { get; set; } = new List<Event>();
     }
 }
