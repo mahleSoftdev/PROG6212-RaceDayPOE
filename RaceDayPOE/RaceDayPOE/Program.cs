@@ -12,7 +12,10 @@ using RaceDayPOE.Documentation;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -22,7 +25,9 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<AuthResponsesOperationFilter>();
     options.AddSecurityDefinition("cookieAuth", new OpenApiSecurityScheme
     {
-        Name = ".RaceDay.Auth", Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Cookie,
+        Name = ".RaceDay.Auth",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Cookie,
         Description = "Authenticate through POST /api/auth/login first. The API sets the authentication cookie."
     });
 });
