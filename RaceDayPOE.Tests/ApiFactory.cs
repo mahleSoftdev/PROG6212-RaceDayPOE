@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RaceDayPOE.Data;
+using RaceDayPOE.Services;
 
 namespace RaceDayPOE.Tests;
 
@@ -15,6 +16,9 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
     public const string ProvisioningKey = "test-provisioning-key";
 
     private readonly string _databaseName = "RaceDayTests_" + Guid.NewGuid();
+
+    //Replaces Azure Blob Storage in every test.
+    public FakeImageStorage Images { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -29,6 +33,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<RaceDayDbContext>>();
             services.RemoveAll<RaceDayDbContext>();
             services.AddDbContext<RaceDayDbContext>(options => options.UseInMemoryDatabase(_databaseName));
+            services.RemoveAll<IImageStorage>();
+            services.AddSingleton<IImageStorage>(Images);
         });
     }
 }
