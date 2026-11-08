@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using RaceDayPOE.Data;
 using RaceDayPOE.Models;
 using RaceDayPOE.Documentation;
+using RaceDayPOE.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +37,8 @@ builder.Services.AddDbContext<RaceDayDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("RaceDayDb")));
 builder.Services.AddScoped<IPasswordHasher<Participant>, PasswordHasher<Participant>>();
 builder.Services.AddScoped<IPasswordHasher<Organiser>, PasswordHasher<Organiser>>();
+builder.Services.Configure<BlobStorageOptions>(builder.Configuration.GetSection(BlobStorageOptions.SectionName));
+builder.Services.AddSingleton<IImageStorage, AzureBlobImageStorage>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
