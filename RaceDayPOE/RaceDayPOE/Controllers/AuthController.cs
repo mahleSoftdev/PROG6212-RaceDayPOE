@@ -43,13 +43,13 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<AccountResponse>> Login(LoginRequest request)
     {
         var email = request.Email.Trim().ToLowerInvariant();
-        int id; string firstName; string lastName; string role; DateTime created;
+        int id; string firstName; string lastName; string role; DateTime created; string? picture = null;
         if (request.Role == UserRole.Participant)
         {
             var user = await _db.Participants.SingleOrDefaultAsync(x => x.Email == email);
             if (user is null || _participantHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
                 return Unauthorized(new { message = "Invalid email, password, or role." });
-            id = user.ParticipantID; firstName = user.FirstName; lastName = user.LastName; role = nameof(UserRole.Participant); created = user.CreatedAt;
+            id = user.ParticipantID; firstName = user.FirstName; lastName = user.LastName; role = nameof(UserRole.Participant); created = user.CreatedAt; picture = user.ProfilePictureUrl;
         }
         else if (request.Role == UserRole.Organiser)
         {
@@ -66,7 +66,7 @@ public class AuthController : ControllerBase
             new AuthenticationProperties { IsPersistent = true, AllowRefresh = true, ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) });
         HttpContext.Session.SetString("AccountRole", role);
         HttpContext.Session.SetString("AccountId", id.ToString());
-        return Ok(new AccountResponse(id, firstName, lastName, email, role, created));
+        return Ok(new AccountResponse(id, firstName, lastName, email, role, created, picture));
     }
 
     //Role-specific Participant login route. The request body must specify Participant as its role.
@@ -112,7 +112,7 @@ public class AuthController : ControllerBase
 
     private async Task<bool> EmailExists(string email) =>
         await _db.Participants.AnyAsync(x => x.Email == email) || await _db.Organisers.AnyAsync(x => x.Email == email);
-    private static AccountResponse ToResponse(Participant x) => new(x.ParticipantID, x.FirstName, x.LastName, x.Email, nameof(UserRole.Participant), x.CreatedAt);
+    private static AccountResponse ToResponse(Participant x) => new(x.ParticipantID, x.FirstName, x.LastName, x.Email, nameof(UserRole.Participant), x.CreatedAt, x.ProfilePictureUrl);
     private static AccountResponse ToResponse(Organiser x) => new(x.OrganiserID, x.FirstName, x.LastName, x.Email, nameof(UserRole.Organiser), x.CreatedAt);
     private static bool CryptographicEquals(string a, string b)
     {

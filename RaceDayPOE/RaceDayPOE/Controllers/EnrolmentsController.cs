@@ -18,7 +18,7 @@ public class EnrolmentsController(RaceDayDbContext db) : ControllerBase
         var q = db.Enrolments.AsNoTracking().Include(x => x.Participant).Include(x => x.Category).ThenInclude(c => c!.Event).AsQueryable();
         if (User.IsInRole(nameof(UserRole.Participant))) q = q.Where(x => x.ParticipantID == AccountId());
         else q = q.Where(x => x.Category != null && x.Category.Event != null && x.Category.Event.OrganiserID == AccountId());
-        return Ok(await q.Select(x => new { x.EnrolmentID, x.ParticipantID, ParticipantName = x.Participant!.FirstName + " " + x.Participant.LastName, x.CategoryID, CategoryName = x.Category!.Name, EventName = x.Category.Event!.Name, x.EnrolmentDate, x.Status }).ToListAsync());
+        return Ok(await q.Select(x => new { x.EnrolmentID, x.ParticipantID, ParticipantName = x.Participant!.FirstName + " " + x.Participant.LastName, x.CategoryID, CategoryName = x.Category!.Name, EventID = x.Category.EventID, EventName = x.Category.Event!.Name, EventDate = x.Category.Event.EventDate, x.EnrolmentDate, x.Status }).ToListAsync());
     }
     //List enrolments for an event owned by the authenticated Organiser.
     [Authorize(Policy = "OrganiserOnly"), HttpGet("/api/events/{eventId:int}/enrolments")]

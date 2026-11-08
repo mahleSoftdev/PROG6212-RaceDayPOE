@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -5,23 +6,63 @@ using Microsoft.EntityFrameworkCore;
 using RaceDayPOE.Data;
 using RaceDayPOE.DTOs;
 using RaceDayPOE.Models;
+using RaceDayPOE.Services;
 
 namespace RaceDayPOE.Controllers;
 
 [ApiController, Route("api/events")]
-public class EventsController(RaceDayDbContext db) : ControllerBase
+public class EventsController(RaceDayDbContext db, IImageStorage images) : ControllerBase
 {
+    //Shared projection used by the public list, the detail endpoint and the Organiser's own list.
+    private static readonly Expression<Func<Event, EventView>> ToView = e => new EventView
+    {
+        EventID = e.EventID, Name = e.Name, Description = e.Description, EventDate = e.EventDate, EventType = e.EventType,
+        VenueID = e.VenueID, Venue = e.Venue == null ? null : e.Venue.Name, VenueCity = e.Venue == null ? null : e.Venue.City,
+        BannerUrl = e.BannerUrl,
+        EnrolmentCount = e.Categories.SelectMany(c => c.Enrolments).Count(x => x.Status != EnrolmentStatus.Cancelled),
+        Categories = e.Categories.Select(c => new CategoryView
+        {
+            CategoryID = c.CategoryID, EventID = c.EventID, Name = c.Name, DistanceKm = c.DistanceKm, MaxParticipants = c.MaxParticipants, EntryFee = c.EntryFee,
+            Enrolled = c.Enrolments.Count(x => x.Status != EnrolmentStatus.Cancelled)
+        }).ToList()
+    };
+
     //Browse events. Public access supports event discovery.
     [AllowAnonymous, HttpGet]
-    public async Task<IActionResult> GetAll() => Ok(await db.Events.AsNoTracking().Include(e => e.Venue).Include(e => e.Categories).Select(e => new { e.EventID, e.Name, e.Description, e.EventDate, e.EventType, e.VenueID, Venue = e.Venue == null ? null : e.Venue.Name, Categories = e.Categories.Select(c => new { c.CategoryID, c.Name, c.DistanceKm, c.MaxParticipants, c.EntryFee }) }).ToListAsync());
-    //Get an event and its categories.
+    public async Task<IActionResult> GetAll() => Ok(await db.Events.AsNoTracking().OrderBy(e => e.EventDate).Select(ToView).ToListAsync());
     [AllowAnonymous, HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id)
     {
-        var e = await db.Events.AsNoTracking().Include(x => x.Venue).Include(x => x.Categories).FirstOrDefaultAsync(x => x.EventID == id);
-        return e is null ? NotFound() : Ok(new { e.EventID, e.Name, e.Description, e.EventDate, e.EventType, e.VenueID, Venue = e.Venue?.Name, e.Categories });
+        var e = await db.Events.AsNoTracking().Where(x => x.EventID == id).Select(ToView).FirstOrDefaultAsync();
+        return e is null ? NotFound() : Ok(e);
     }
-    //Create an event owned by the authenticated Organiser.
+    //Events owned by the authenticated Organiser, with enrolment totals (dashboard and management pages).
+    [Authorize(Policy = "OrganiserOnly"), HttpGet("/api/organisers/me/events")]
+    public async Task<IActionResult> GetMine()
+    {
+        var organiserId = AccountId();
+        return Ok(await db.Events.AsNoTracking().Where(e => e.OrganiserID == organiserId).OrderBy(e => e.EventDate).Select(ToView).ToListAsync());
+    }
+    //Upload or replace the event banner. The image is stored in Azure Blob Storage and its URL saved on the event.
+    [Authorize(Policy = "OrganiserOnly"), HttpPost("{id:int}/banner"), Consumes("multipart/form-data")]
+    [RequestSizeLimit(ImageValidator.MaxBytes + 1024 * 1024)]
+    public async Task<IActionResult> UploadBanner(int id, IFormFile file, CancellationToken cancellationToken)
+    {
+        var e = await db.Events.FindAsync(new object[] { id }, cancellationToken); if (e is null) return NotFound(); if (e.OrganiserID != AccountId()) return Forbid();
+        var image = await ImageValidator.InspectAsync(file, cancellationToken);
+        if (!image.IsValid) return BadRequest(new { message = image.Error });
+        string url;
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            url = await images.UploadAsync("events", stream, image.ContentType!, image.Extension!, cancellationToken);
+        }
+        catch (ImageStorageUnavailableException ex) { return StatusCode(StatusCodes.Status503ServiceUnavailable, new { message = ex.Message }); }
+        var previous = e.BannerUrl;
+        e.BannerUrl = url; await db.SaveChangesAsync(cancellationToken);
+        await images.DeleteAsync(previous, cancellationToken);
+        return Ok(new { bannerUrl = url });
+    }
     [Authorize(Policy = "OrganiserOnly"), HttpPost]
     public async Task<IActionResult> Create(EventRequest request)
     {
@@ -45,7 +86,7 @@ public class EventsController(RaceDayDbContext db) : ControllerBase
     {
         var e = await db.Events.FindAsync(id); if (e is null) return NotFound(); if (e.OrganiserID != AccountId()) return Forbid();
         if (await db.Categories.AnyAsync(c => c.EventID == id)) return Conflict(new { message = "Remove dependent categories and enrolments before deleting this event." });
-        db.Events.Remove(e); await db.SaveChangesAsync(); return NoContent();
+        var banner = e.BannerUrl; db.Events.Remove(e); await db.SaveChangesAsync(); await images.DeleteAsync(banner); return NoContent();
     }
     private int AccountId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 }

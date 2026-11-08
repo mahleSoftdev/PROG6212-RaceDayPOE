@@ -46,7 +46,16 @@ public class ResultsController(RaceDayDbContext db) : ControllerBase
     [Authorize(Policy = "ParticipantOnly"), HttpGet("/api/participants/me/results")]
     public async Task<IActionResult> GetMyResults() => Ok(await db.Results.AsNoTracking().Include(r => r.Enrolment).ThenInclude(e => e!.Category).ThenInclude(c => c!.Event)
         .Where(r => r.Enrolment!.ParticipantID == AccountId())
-        .Select(r => new { r.ResultID, r.EnrolmentID, r.FinishTime, r.Position, r.RecordedAt, EventName = r.Enrolment!.Category!.Event!.Name }).ToListAsync());
+        .OrderByDescending(r => r.Enrolment!.Category!.Event!.EventDate)
+        .Select(r => new
+        {
+            r.ResultID, r.EnrolmentID, r.FinishTime, r.Position, r.RecordedAt,
+            EventName = r.Enrolment!.Category!.Event!.Name,
+            EventDate = r.Enrolment.Category.Event.EventDate,
+            CategoryName = r.Enrolment.Category.Name,
+            //Finishers are counted per category, because each category is ranked separately.
+            TotalFinishers = db.Results.Count(x => x.Enrolment!.CategoryID == r.Enrolment.CategoryID)
+        }).ToListAsync());
 
     //Get the result linked to an enrolment if the caller owns the participant account or event.
     [HttpGet("/api/enrolments/{enrolmentId:int}/results")]

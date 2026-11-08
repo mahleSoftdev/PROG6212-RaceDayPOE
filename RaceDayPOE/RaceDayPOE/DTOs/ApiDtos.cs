@@ -23,7 +23,7 @@ public sealed class ProvisionOrganiserRequest
     [Required, EmailAddress, MaxLength(255)] public string Email { get; init; } = "";
     [Required, MinLength(12), MaxLength(100)] public string TemporaryPassword { get; init; } = "";
 }
-public sealed record AccountResponse(int Id, string FirstName, string LastName, string Email, string Role, DateTime CreatedAt);
+public sealed record AccountResponse(int Id, string FirstName, string LastName, string Email, string Role, DateTime CreatedAt, string? ProfilePictureUrl = null);
 public sealed class UpdateProfileRequest
 {
     [Required, MaxLength(100)] public string FirstName { get; init; } = "";
@@ -69,3 +69,30 @@ public sealed class ChangePasswordRequest
 }
 
 public sealed class EnrolmentStatusRequest { [Required] public EnrolmentStatus Status { get; init; } }
+
+//Read models returned by the event endpoints (public browsing and the Organiser's own events).
+public sealed class CategoryView
+{
+    public int CategoryID { get; set; }
+    public int EventID { get; set; }
+    public string Name { get; set; } = "";
+    public decimal DistanceKm { get; set; }
+    public int MaxParticipants { get; set; }
+    public decimal EntryFee { get; set; }
+    //Active (non-cancelled) enrolments, so clients can show how many places are left.
+    public int Enrolled { get; set; }
+}
+public sealed class EventView
+{
+    public int EventID { get; set; }
+    public string Name { get; set; } = "";
+    public string Description { get; set; } = "";
+    public DateTime EventDate { get; set; }
+    public EventType EventType { get; set; }
+    public int VenueID { get; set; }
+    public string? Venue { get; set; }
+    public string? VenueCity { get; set; }
+    public string? BannerUrl { get; set; }
+    public int EnrolmentCount { get; set; }
+    public List<CategoryView> Categories { get; set; } = new();
+}
