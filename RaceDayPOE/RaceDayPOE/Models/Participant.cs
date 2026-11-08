@@ -29,6 +29,10 @@ namespace RaceDayPOE.Models
         [Required, MaxLength(100)]
         public string PasswordHash { get; set; } = string.Empty;
 
+        //Public URL of the profile picture stored in Azure Blob Storage (null until one is uploaded).
+        [MaxLength(500)]
+        public string? ProfilePictureUrl { get; set; }
+
         [Column(TypeName = "datetime")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

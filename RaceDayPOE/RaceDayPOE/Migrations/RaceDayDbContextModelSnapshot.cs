@@ -28,6 +28,7 @@ partial class RaceDayDbContextModelSnapshot : ModelSnapshot
             b.Property(x => x.ParticipantID).ValueGeneratedOnAdd(); b.Property(x => x.FirstName).HasMaxLength(100).IsRequired();
             b.Property(x => x.LastName).HasMaxLength(100).IsRequired(); b.Property(x => x.Email).HasMaxLength(255).IsRequired();
             b.Property(x => x.PasswordHash).HasMaxLength(100).IsRequired(); b.Property(x => x.CreatedAt).HasColumnType("datetime");
+            b.Property(x => x.ProfilePictureUrl).HasMaxLength(500);
             b.HasIndex(x => x.Email).IsUnique();
         });
         modelBuilder.Entity<Venue>(b =>
@@ -43,6 +44,7 @@ partial class RaceDayDbContextModelSnapshot : ModelSnapshot
             b.HasKey(x => x.EventID); b.Property(x => x.EventID).ValueGeneratedOnAdd(); b.Property(x => x.Name).HasMaxLength(150).IsRequired();
             b.Property(x => x.Description).HasMaxLength(500).IsRequired(); b.Property(x => x.EventDate).HasColumnType("date");
             b.Property(x => x.EventType).HasConversion<string>().HasMaxLength(20); b.Property(x => x.CreatedAt).HasColumnType("datetime");
+            b.Property(x => x.BannerUrl).HasMaxLength(500);
             b.HasOne(x => x.Organiser).WithMany(x => x.Events).HasForeignKey(x => x.OrganiserID).HasConstraintName("FK_Events_Organisers").OnDelete(DeleteBehavior.Restrict);
             b.HasOne(x => x.Venue).WithMany(x => x.Events).HasForeignKey(x => x.VenueID).HasConstraintName("FK_Events_Venues").OnDelete(DeleteBehavior.Restrict);
         });

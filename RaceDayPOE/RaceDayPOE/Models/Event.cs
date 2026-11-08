@@ -32,6 +32,10 @@ namespace RaceDayPOE.Models
         //Run, Walk or Cycle. Stored as text and limited by a CHECK constraint.
         public EventType EventType { get; set; }
 
+        //Public URL of the event banner stored in Azure Blob Storage (null until one is uploaded).
+        [MaxLength(500)]
+        public string? BannerUrl { get; set; }
+
         [Column(TypeName = "datetime")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
