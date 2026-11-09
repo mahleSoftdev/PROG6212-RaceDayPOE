@@ -1,0 +1,76 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var maxEnrolments = Math.Max(1, Model.Events.Select(e => e.EnrolmentCount).DefaultIfEmpty(0).Max());
+}
+<div class="page-head">
+    <div><h1 class="rd-title">Dashboard</h1><p class="text-muted mb-0">Your events at a glance.</p></div>
+    <a class="btn btn-primary" asp-controller="Events" asp-action="Create"><i class="bi bi-plus-lg"></i> New event</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3"><div class="rd-card stat-tile"><small>Events created</small><div class="num">@Model.TotalEvents</div></div></div>
+    <div class="col-6 col-xl-3"><div class="rd-card stat-tile accent-lime"><small>Total enrolments</small><div class="num">@Model.TotalEnrolments</div></div></div>
+    <div class="col-6 col-xl-3"><div class="rd-card stat-tile accent-blue"><small>Upcoming events</small><div class="num">@Model.Upcoming.Count</div></div></div>
+    <div class="col-6 col-xl-3"><div class="rd-card stat-tile"><small>Next event</small><div class="num" style="font-size:1.8rem">@(Model.NextEventDate is DateTime next ? Format.Date(next) : "None yet")</div></div></div>
+</div>
+
+@if (Model.Events.Count == 0)
+{
+    <div class="rd-card rd-empty text-center">
+        <div class="rd-empty-icon"><i class="bi bi-flag"></i></div>
+        <h2 class="rd-h2">No events yet</h2>
+        <p class="text-muted">Create your first event and it will show up here with live enrolment totals.</p>
+        <a class="btn btn-primary" asp-controller="Events" asp-action="Create">Create an event</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <section class="rd-card" aria-labelledby="enr-h">
+                <div class="rd-card-body pb-0"><h2 class="rd-h2" id="enr-h">Enrolments per event</h2></div>
+                <div class="table-responsive">
+                    <table class="table rd-table">
+                        <caption class="visually-hidden">Enrolments for each of your events</caption>
+                        <thead><tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Enrolments</th><th scope="col" style="width:22%"><span class="visually-hidden">Share</span></th><th scope="col"></th></tr></thead>
+                        <tbody>
+                        @foreach (var e in Model.Events.OrderByDescending(e => e.EventDate))
+                        {
+                            <tr>
+                                <td><div class="fw-semibold">@e.Name</div><span class="status-badge @(e.IsUpcoming ? "status-upcoming" : "status-completed")">@(e.IsUpcoming ? "Upcoming" : "Completed")</span></td>
+                                <td>@Format.Date(e.EventDate)</td>
+                                <td class="fw-bold fs-5">@e.EnrolmentCount</td>
+                                <td><div class="bar-track" role="img" aria-label="@e.EnrolmentCount of @maxEnrolments"><div class="bar-fill" style="width:@(e.EnrolmentCount * 100 / maxEnrolments)%"></div></div></td>
+                                <td class="text-end"><a class="btn btn-outline-primary btn-sm" asp-controller="Enrolments" asp-action="Index" asp-route-eventId="@e.EventID">View</a></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+        <div class="col-xl-4">
+            <section class="rd-card rd-card-body" aria-labelledby="up-h">
+                <h2 class="rd-h2" id="up-h">Upcoming event dates</h2>
+                @if (Model.Upcoming.Count == 0)
+                {
+                    <p class="text-muted mb-0">No upcoming events scheduled.</p>
+                }
+                else
+                {
+                    <ul class="list-unstyled mb-0 d-grid gap-3">
+                    @foreach (var e in Model.Upcoming.Take(6))
+                    {
+                        var days = (e.EventDate.Date - DateTime.Today).Days;
+                        <li class="d-flex gap-3 align-items-center">
+                            <div class="date-chip position-static flex-shrink-0" style="min-width:56px"><b>@Format.Day(e.EventDate)</b><span>@Format.Month(e.EventDate)</span></div>
+                            <div class="flex-grow-1"><div class="fw-semibold">@e.Name</div><div class="small text-muted">@(days == 0 ? "Today" : days == 1 ? "Tomorrow" : $"In {days} days") &middot; @e.EnrolmentCount enrolled</div></div>
+                        </li>
+                    }
+                    </ul>
+                }
+            </section>
+        </div>
+    </div>
+}
