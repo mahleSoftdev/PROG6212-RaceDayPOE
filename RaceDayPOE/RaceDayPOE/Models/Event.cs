@@ -13,6 +13,7 @@ namespace RaceDayPOE.Models
         [Key]
         public int EventID { get; set; }
 
+
         //Foreign key to the organiser who owns this event.
         public int OrganiserID { get; set; }
 
