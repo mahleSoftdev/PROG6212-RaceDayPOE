@@ -1,0 +1,93 @@
+@model EventDetailsViewModel
+@{
+    var e = Model.Event;
+    ViewData["Title"] = e.Name;
+    var isParticipant = User.IsInRole(RoleNames.Participant);
+    var signedIn = User.Identity?.IsAuthenticated == true;
+}
+<nav aria-label="breadcrumb"><ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a asp-area="" asp-controller="Home" asp-action="Index">Events</a></li>
+    <li class="breadcrumb-item active" aria-current="page">@e.Name</li>
+</ol></nav>
+
+<partial name="_Cover" model="e" view-data='new ViewDataDictionary(ViewData) { { "Large", true } }' />
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-7">
+        <partial name="_TypePill" model="e.EventType" />
+        @if (!e.IsUpcoming) { <span class="status-badge status-completed ms-1">Completed</span> }
+        <h1 class="rd-title mt-2">@e.Name</h1>
+        <div class="detail-facts my-4">
+            <div class="fact"><small>Date</small><strong>@Format.LongDate(e.EventDate)</strong></div>
+            <div class="fact"><small>Venue</small><strong>@(e.Venue ?? "To be confirmed")</strong></div>
+            <div class="fact"><small>City</small><strong>@(string.IsNullOrEmpty(e.VenueCity) ? "-" : e.VenueCity)</strong></div>
+            <div class="fact"><small>Entries</small><strong>@e.EnrolmentCount enrolled</strong></div>
+        </div>
+        <h2 class="rd-h2">About this event</h2>
+        <p style="white-space:pre-line">@e.Description</p>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="rd-card rd-card-body" aria-labelledby="cats-h">
+            <h2 class="rd-h2" id="cats-h">Categories</h2>
+            @if (!e.Categories.Any())
+            {
+                <p class="text-muted mb-0">The organiser hasn't published categories for this event yet.</p>
+            }
+            else if (isParticipant && e.IsUpcoming)
+            {
+                <form asp-area="Participant" asp-controller="Enrolments" asp-action="Create" method="post">
+                    <input type="hidden" name="eventId" value="@e.EventID" />
+                    <p class="text-muted small">Pick a category to enrol. Your place is recorded straight away.</p>
+                    <div class="d-grid gap-2 mb-3">
+                        @foreach (var c in e.Categories.OrderBy(c => c.DistanceKm))
+                        {
+                            var already = Model.EnrolledCategoryIds.Contains(c.CategoryID);
+                            var disabled = already || c.IsFull;
+                            <div>
+                                <input type="radio" class="btn-check category-input visually-hidden" name="categoryId" id="cat-@c.CategoryID" value="@c.CategoryID" disabled="@disabled" required />
+                                <label class="category-row" for="cat-@c.CategoryID">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold">@c.Name</div>
+                                        <div class="small text-muted">@Format.Km(c.DistanceKm) &middot; @Format.Rand(c.EntryFee) &middot; @(c.IsFull ? "Full" : $"{c.SpotsLeft} spots left")</div>
+                                    </div>
+                                    @if (already) { <span class="status-badge status-confirmed"><i class="bi bi-check-circle-fill"></i> Enrolled</span> }
+                                    else if (c.IsFull) { <span class="status-badge status-full">Full</span> }
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">Enrol now</button>
+                </form>
+            }
+            else
+            {
+                <ul class="list-unstyled d-grid gap-2 mb-3">
+                    @foreach (var c in e.Categories.OrderBy(c => c.DistanceKm))
+                    {
+                        <li class="category-row" style="cursor:default">
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">@c.Name</div>
+                                <div class="small text-muted">@Format.Km(c.DistanceKm) &middot; @Format.Rand(c.EntryFee) &middot; @(c.IsFull ? "Full" : $"{c.SpotsLeft} spots left")</div>
+                            </div>
+                            @if (c.IsFull) { <span class="status-badge status-full">Full</span> }
+                        </li>
+                    }
+                </ul>
+                @if (!signedIn)
+                {
+                    <a class="btn btn-primary w-100 btn-lg" asp-area="" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">Log in to enrol</a>
+                    <p class="small text-center text-muted mt-2 mb-0">No account? <a asp-area="" asp-controller="Account" asp-action="Register">Sign up free</a></p>
+                }
+                else if (isParticipant)
+                {
+                    <div class="alert alert-secondary mb-0">This event has already taken place, so enrolment is closed.</div>
+                }
+                else
+                {
+                    <div class="alert alert-secondary mb-0">Organiser accounts can't enrol. Manage this event from your <a asp-area="Organiser" asp-controller="Dashboard" asp-action="Index">dashboard</a>.</div>
+                }
+            }
+        </section>
+    </div>
+</div>

@@ -1,2 +1,71 @@
-@{ ViewData["Title"] = "Home"; }
-<h1 class="rd-title">RaceDay</h1>
+@model EventFilterViewModel
+@{ ViewData["Title"] = "Upcoming events"; }
+@section Hero {
+    <section class="rd-hero">
+        <div class="container">
+            <h1>Find your next <span>finish line</span></h1>
+            <p class="lead mt-3">Browse runs, walks and rides, pick your distance and enrol in seconds.</p>
+            <div class="hero-stats">
+                <div><b>@Model.UpcomingCount</b><span>Upcoming events</span></div>
+                <div><b>@Model.Cities.Count</b><span>Host cities</span></div>
+            </div>
+        </div>
+    </section>
+}
+
+<form method="get" asp-action="Index" asp-controller="Home" asp-area="" class="rd-card rd-card-body filter-bar mb-4" role="search" aria-label="Filter events">
+    <div class="row g-3 align-items-end">
+        <div class="col-lg-3 col-md-6">
+            <label asp-for="Search" class="form-label">Search</label>
+            <input asp-for="Search" class="form-control" placeholder="Event, venue or keyword" />
+        </div>
+        <div class="col-lg-2 col-md-6">
+            <label asp-for="Type" class="form-label">Event type</label>
+            <select asp-for="Type" class="form-select" asp-items="@(Html.GetEnumSelectList<EventType>())"><option value="">All types</option></select>
+        </div>
+        <div class="col-lg-2 col-md-4">
+            <label asp-for="City" class="form-label">City</label>
+            <select asp-for="City" class="form-select" asp-items="@(Model.Cities.Select(c => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(c, c)))"><option value="">Any city</option></select>
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <label asp-for="From" class="form-label">From</label>
+            <input asp-for="From" type="date" class="form-control" />
+        </div>
+        <div class="col-lg-2 col-md-4 col-6">
+            <label asp-for="To" class="form-label">To</label>
+            <input asp-for="To" type="date" class="form-control" />
+        </div>
+        <div class="col-lg-1 col-12 d-grid"><button type="submit" class="btn btn-primary" data-no-busy>Go</button></div>
+    </div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
+        <div class="form-check">
+            <input asp-for="IncludePast" class="form-check-input" />
+            <label asp-for="IncludePast" class="form-check-label">Include past events</label>
+        </div>
+        @if (Model.HasFilters) { <a asp-action="Index" class="small">Clear filters</a> }
+    </div>
+</form>
+
+<div class="d-flex justify-content-between align-items-end mb-3">
+    <h2 class="rd-h2 mb-0">@(Model.IncludePast ? "All events" : "Upcoming events")</h2>
+    <span class="text-muted">@Model.Events.Count @(Model.Events.Count == 1 ? "event" : "events")</span>
+</div>
+
+@if (Model.Events.Count == 0)
+{
+    <div class="rd-card rd-empty text-center">
+        <div class="rd-empty-icon"><i class="bi bi-flag"></i></div>
+        <h3>No events match</h3>
+        <p class="text-muted mb-3">@(Model.HasFilters ? "Try widening your filters or including past events." : "There are no upcoming events right now. Check back soon.")</p>
+        @if (Model.HasFilters) { <a asp-action="Index" class="btn btn-primary">Clear filters</a> }
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var e in Model.Events)
+        {
+            <div class="col-md-6 col-xl-4"><partial name="_EventCard" model="e" /></div>
+        }
+    </div>
+}

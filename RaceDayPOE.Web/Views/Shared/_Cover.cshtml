@@ -1,0 +1,16 @@
+@model EventDto
+@{ var large = ViewData["Large"] as bool? == true; }
+<div class="cover-wrap @Format.CoverClass(Model.EventType) @(large ? "cover-lg" : "") @(string.IsNullOrEmpty(Model.BannerUrl) ? "cover-empty" : "")" data-icon="">
+    @if (!string.IsNullOrEmpty(Model.BannerUrl))
+    {
+        <img src="@Model.BannerUrl" alt="@(large ? $"Banner for {Model.Name}" : "")" loading="lazy" data-fallback />
+    }
+    else
+    {
+        <i class="bi bi-@Format.TypeIcon(Model.EventType)" aria-hidden="true"></i>
+    }
+    @if (!large)
+    {
+        <div class="date-chip"><b>@Format.Day(Model.EventDate)</b><span>@Format.Month(Model.EventDate)</span></div>
+    }
+</div>

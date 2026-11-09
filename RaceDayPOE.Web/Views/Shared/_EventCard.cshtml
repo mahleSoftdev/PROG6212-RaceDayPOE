@@ -1,0 +1,17 @@
+@model EventDto
+<article class="rd-card event-card">
+    <partial name="_Cover" model="Model" />
+    <div class="card-main">
+        <partial name="_TypePill" model="Model.EventType" />
+        <h3><a asp-area="" asp-controller="Events" asp-action="Details" asp-route-id="@Model.EventID">@Model.Name</a></h3>
+        <p class="event-meta mb-2"><i class="bi bi-geo-alt-fill text-primary"></i> @(Model.Venue ?? "Venue to be confirmed")@(string.IsNullOrEmpty(Model.VenueCity) ? "" : ", " + Model.VenueCity)</p>
+        <p class="event-meta mb-0"><i class="bi bi-calendar-event"></i> @Format.LongDate(Model.EventDate)</p>
+    </div>
+    <div class="card-foot">
+        @foreach (var c in Model.Categories.OrderBy(c => c.DistanceKm).Take(4))
+        {
+            <span class="chip">@Format.Km(c.DistanceKm)</span>
+        }
+        @if (!Model.Categories.Any()) { <span class="chip">Categories coming soon</span> }
+    </div>
+</article>
