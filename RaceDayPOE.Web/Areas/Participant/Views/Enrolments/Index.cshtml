@@ -1,0 +1,47 @@
+@model List<EnrolmentDto>
+@{ ViewData["Title"] = "My enrolments"; }
+<div class="page-head">
+    <div><h1 class="rd-title">My enrolments</h1><p class="text-muted mb-0">Every event you've signed up for, and where each one stands.</p></div>
+    <a class="btn btn-primary" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-plus-lg"></i> Find events</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="rd-card rd-empty text-center">
+        <div class="rd-empty-icon"><i class="bi bi-clipboard-check"></i></div>
+        <h2 class="rd-h2">You haven't enrolled in anything yet</h2>
+        <p class="text-muted">Browse upcoming events and pick your first start line.</p>
+        <a class="btn btn-primary" asp-area="" asp-controller="Home" asp-action="Index">Browse events</a>
+    </div>
+}
+else
+{
+    <div class="rd-card table-responsive">
+        <table class="table rd-table">
+            <caption class="visually-hidden">Your event enrolments</caption>
+            <thead><tr><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Category</th><th scope="col">Enrolled on</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody>
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">
+                        @if (e.EventID is int id) { <a asp-area="" asp-controller="Events" asp-action="Details" asp-route-id="@id">@e.EventName</a> } else { @e.EventName }
+                    </td>
+                    <td>@(e.EventDate is DateTime d ? Format.Date(d) : "-")</td>
+                    <td>@e.CategoryName</td>
+                    <td>@Format.Date(e.EnrolmentDate)</td>
+                    <td><partial name="_StatusBadge" model="e.Status" /></td>
+                    <td class="text-end">
+                        @if (e.Status != EnrolmentStatus.Cancelled)
+                        {
+                            <form asp-action="Cancel" asp-route-id="@e.EnrolmentID" method="post" data-confirm="Cancel your enrolment in @e.EventName (@e.CategoryName)?">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
