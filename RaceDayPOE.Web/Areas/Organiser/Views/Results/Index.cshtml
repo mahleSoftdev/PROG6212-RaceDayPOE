@@ -1,0 +1,68 @@
+@model ResultsPageViewModel
+@{ ViewData["Title"] = "Results"; }
+<div class="page-head">
+    <div><h1 class="rd-title">Results</h1><p class="text-muted mb-0">Capture finish times and positions. Saved results are published to participants immediately.</p></div>
+</div>
+
+@if (Model.Event is null)
+{
+    <h2 class="rd-h2">Choose an event</h2>
+    <partial name="_EventPicker" model="Model.Events" view-data='new ViewDataDictionary(ViewData) { { "Action", "Index" } }' />
+}
+else
+{
+    <partial name="_EventHeader" model="Model.Event" />
+    @if (!Model.EventHasHappened)
+    {
+        <div class="alert alert-warning"><i class="bi bi-exclamation-triangle-fill"></i> This event hasn't taken place yet (@Format.Date(Model.Event.EventDate)). Results are normally captured after it concludes.</div>
+    }
+    @if (Model.Rows.Count == 0)
+    {
+        <div class="rd-card rd-empty text-center"><div class="rd-empty-icon"><i class="bi bi-stopwatch"></i></div><h2 class="rd-h2">No participants to record</h2><p class="text-muted mb-0">Active enrolments for this event will be listed here.</p></div>
+    }
+    else
+    {
+        <p class="text-muted small">Positions are per category. Enter times as <code>hh:mm:ss</code>, e.g. <code>00:45:12</code>.</p>
+        <div class="rd-card table-responsive">
+            <table class="table rd-table">
+                <caption class="visually-hidden">Results entry for @Model.Event.Name</caption>
+                <thead><tr><th scope="col">Participant</th><th scope="col">Category</th><th scope="col">Finish time</th><th scope="col">Position</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    var e = row.Enrolment; var r = row.Result; var fid = $"result-{e.EnrolmentID}";
+                    <tr>
+                        <td class="fw-semibold">
+                            <form id="@fid" asp-action="Save" method="post">
+                                <input type="hidden" name="eventId" value="@Model.Event.EventID" />
+                                <input type="hidden" name="enrolmentId" value="@e.EnrolmentID" />
+                                @if (r is not null) { <input type="hidden" name="resultId" value="@r.ResultID" /> }
+                            </form>
+                            @e.ParticipantName
+                            @if (e.Status == EnrolmentStatus.Pending) { <span class="status-badge status-pending ms-1">Pending</span> }
+                        </td>
+                        <td>@e.CategoryName</td>
+                        <td><label class="visually-hidden" for="t-@e.EnrolmentID">Finish time for @e.ParticipantName</label>
+                            <input id="t-@e.EnrolmentID" form="@fid" name="finishTime" class="form-control form-control-sm time-cell" style="width:7.5rem" placeholder="hh:mm:ss" pattern="\d{1,2}:[0-5]\d:[0-5]\d" inputmode="numeric" required value="@(r is null ? "" : Format.FinishTimeInput(r.FinishTime))" /></td>
+                        <td><label class="visually-hidden" for="p-@e.EnrolmentID">Position for @e.ParticipantName</label>
+                            <input id="p-@e.EnrolmentID" form="@fid" name="position" type="number" min="1" class="form-control form-control-sm" style="width:6rem" required value="@(r?.Position)" /></td>
+                        <td class="text-end text-nowrap">
+                            <button type="submit" form="@fid" class="btn btn-sm @(r is null ? "btn-primary" : "btn-outline-primary")">@(r is null ? "Save" : "Update")</button>
+                            @if (r is not null)
+                            {
+                                <button type="submit" form="del-@r.ResultID" class="btn btn-outline-danger btn-sm" title="Remove result"><i class="bi bi-trash"></i></button>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        @foreach (var row in Model.Rows.Where(r => r.Result is not null))
+        {
+            <form id="del-@row.Result!.ResultID" asp-action="Delete" method="post" data-confirm="Remove the result for @row.Enrolment.ParticipantName?">
+                <input type="hidden" name="eventId" value="@Model.Event.EventID" /><input type="hidden" name="resultId" value="@row.Result!.ResultID" />
+            </form>
+        }
+    }
+}
