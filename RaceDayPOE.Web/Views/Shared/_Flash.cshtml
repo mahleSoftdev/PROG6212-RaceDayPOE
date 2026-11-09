@@ -1,0 +1,20 @@
+@{
+    var flashes = new[]
+    {
+        (Key: "Success", Css: "success", Icon: "check-circle-fill"),
+        (Key: "Info", Css: "info", Icon: "info-circle-fill"),
+        (Key: "Warning", Css: "warning", Icon: "exclamation-triangle-fill"),
+        (Key: "Error", Css: "danger", Icon: "x-octagon-fill")
+    };
+}
+@foreach (var flash in flashes)
+{
+    if (TempData[flash.Key] is string message && !string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert alert-@flash.Css alert-dismissible fade show d-flex align-items-start gap-2" role="@(flash.Key == "Error" ? "alert" : "status")">
+            <i class="bi bi-@flash.Icon mt-1"></i>
+            <div class="flex-grow-1">@message</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+}

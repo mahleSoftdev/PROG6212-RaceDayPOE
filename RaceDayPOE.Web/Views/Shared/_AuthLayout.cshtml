@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="_Head" />
+    <title>@ViewData["Title"] - RaceDay</title>
+</head>
+<body class="rd-body">
+    <div class="auth-shell">
+        <aside class="auth-brand" aria-hidden="true">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="text-decoration-none"><partial name="_Logo" /></a>
+            <div>
+                <p class="auth-tag">Your next<br />finish line<br /><span>starts here.</span></p>
+                <p class="auth-sub">Runs, walks and rides across South Africa, all in one place.</p>
+            </div>
+            <div class="auth-stripes"></div>
+        </aside>
+        <main class="auth-panel">
+            <div class="auth-card">
+                <partial name="_Flash" />
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+    <partial name="_Scripts" />
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

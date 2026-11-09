@@ -1,13 +1,81 @@
+@{
+    var isParticipant = User.IsInRole(RoleNames.Participant);
+    var isOrganiser = User.IsInRole(RoleNames.Organiser);
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var displayName = User.Identity?.Name ?? "";
+    string Active(string controller, string? area = null) =>
+        string.Equals((string?)ViewContext.RouteData.Values["controller"], controller, StringComparison.OrdinalIgnoreCase)
+        && string.Equals((string?)ViewContext.RouteData.Values["area"] ?? "", area ?? "", StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <partial name="_Head" />
     <title>@ViewData["Title"] - RaceDay</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
 </head>
-<body>
-    <main class="container py-4">@RenderBody()</main>
-    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+<body class="rd-body">
+    <a class="visually-hidden-focusable" href="#main">Skip to content</a>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark rd-nav" aria-label="Main navigation">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index"><partial name="_Logo" /></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link @Active("Home")" asp-area="" asp-controller="Home" asp-action="Index">Events</a></li>
+                        @if (isParticipant)
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("Enrolments", "Participant")" asp-area="Participant" asp-controller="Enrolments" asp-action="Index">My Enrolments</a></li>
+                            <li class="nav-item"><a class="nav-link @Active("Results", "Participant")" asp-area="Participant" asp-controller="Results" asp-action="Index">My Results</a></li>
+                        }
+                        @if (isOrganiser)
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-area="Organiser" asp-controller="Dashboard" asp-action="Index">Organiser Dashboard</a></li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav align-items-lg-center gap-lg-2">
+                        @if (signedIn)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle user-chip" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span class="avatar-sm">@(displayName.Length > 0 ? displayName[0].ToString().ToUpperInvariant() : "?")</span>
+                                    <span>@displayName</span>
+                                    <span class="role-tag role-@(isOrganiser ? "organiser" : "participant")">@(isOrganiser ? "Organiser" : "Participant")</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" asp-area="" asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle me-1"></i> My profile</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><partial name="_SignOut" /></li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link @Active("Account")" asp-area="" asp-controller="Account" asp-action="Login">Log in</a></li>
+                            <li class="nav-item"><a class="btn btn-primary btn-sm px-3" asp-area="" asp-controller="Account" asp-action="Register">Sign up</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    @if (IsSectionDefined("Hero")) { @await RenderSectionAsync("Hero", required: false) }
+
+    <main id="main" class="container py-4 py-lg-5">
+        <partial name="_Flash" />
+        @RenderBody()
+    </main>
+
+    <footer class="rd-footer">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span><strong>RACEDAY</strong> &middot; Run it. Walk it. Ride it.</span>
+            <span class="text-muted">&copy; @DateTime.Now.Year RaceDay</span>
+        </div>
+    </footer>
+    <partial name="_Scripts" />
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

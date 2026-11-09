@@ -1,0 +1,53 @@
+@{
+    var name = User.Identity?.Name ?? "";
+    string Active(string controller) =>
+        string.Equals((string?)ViewContext.RouteData.Values["controller"], controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="_Head" />
+    <title>@ViewData["Title"] - RaceDay Organiser</title>
+</head>
+<body class="rd-body org-body">
+    <a class="visually-hidden-focusable" href="#main">Skip to content</a>
+    <div class="org-topbar d-lg-none">
+        <a asp-area="Organiser" asp-controller="Dashboard" asp-action="Index" class="text-decoration-none"><partial name="_Logo" /></a>
+        <button class="btn btn-outline-light btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#orgMenu" aria-controls="orgMenu"><i class="bi bi-list"></i> Menu</button>
+    </div>
+    <div class="org-shell">
+        <div class="offcanvas-lg offcanvas-start org-sidebar" tabindex="-1" id="orgMenu" aria-label="Organiser navigation">
+            <div class="offcanvas-header d-lg-none">
+                <span class="text-white fw-semibold">Menu</span>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#orgMenu" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body flex-column p-0">
+                <a asp-area="Organiser" asp-controller="Dashboard" asp-action="Index" class="org-brand d-none d-lg-block text-decoration-none"><partial name="_Logo" /></a>
+                <div class="org-who">
+                    <span class="avatar-sm">@(name.Length > 0 ? name[0].ToString().ToUpperInvariant() : "?")</span>
+                    <div><div class="fw-semibold">@name</div><span class="role-tag role-organiser">Organiser</span></div>
+                </div>
+                <nav class="org-nav" aria-label="Organiser pages">
+                    <a class="@Active("Dashboard")" asp-area="Organiser" asp-controller="Dashboard" asp-action="Index"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                    <a class="@Active("Events")" asp-area="Organiser" asp-controller="Events" asp-action="Index"><i class="bi bi-calendar-event"></i> Events</a>
+                    <a class="@Active("Venues")" asp-area="Organiser" asp-controller="Venues" asp-action="Index"><i class="bi bi-geo-alt"></i> Venues</a>
+                    <a class="@Active("Categories")" asp-area="Organiser" asp-controller="Categories" asp-action="Index"><i class="bi bi-tags"></i> Categories</a>
+                    <a class="@Active("Enrolments")" asp-area="Organiser" asp-controller="Enrolments" asp-action="Index"><i class="bi bi-people"></i> Enrolments</a>
+                    <a class="@Active("Results")" asp-area="Organiser" asp-controller="Results" asp-action="Index"><i class="bi bi-stopwatch"></i> Results</a>
+                </nav>
+                <div class="org-foot">
+                    <a asp-area="" asp-controller="Profile" asp-action="Index"><i class="bi bi-person-circle"></i> My profile</a>
+                    <a asp-area="" asp-controller="Home" asp-action="Index" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> View public site</a>
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post"><button type="submit"><i class="bi bi-box-arrow-right"></i> Sign out</button></form>
+                </div>
+            </div>
+        </div>
+        <main id="main" class="org-main">
+            <partial name="_Flash" />
+            @RenderBody()
+        </main>
+    </div>
+    <partial name="_Scripts" />
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
