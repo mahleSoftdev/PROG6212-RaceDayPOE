@@ -72,6 +72,9 @@ For local Swagger testing, call login first, then test protected endpoints in th
 | `PUT /api/users/me/password` | Change own password after verifying current password | Authenticated |
 | `GET /api/events` and `GET /api/events/{id}` | Browse events | Public |
 | `POST/PUT/DELETE /api/events` | Manage events | Organiser, owner checks apply |
+| `GET /api/organisers/me/events` | The Organiser's own events with enrolment totals (Part 3) | Organiser |
+| `POST /api/events/{id}/banner` | Upload an event banner to Azure Blob Storage (Part 3) | Organiser, owner check applies |
+| `POST /api/users/me/picture` | Upload a profile picture to Azure Blob Storage (Part 3) | Participant |
 | `GET /api/categories` | Browse categories | Public |
 | `POST/PUT/DELETE /api/categories` | Manage categories | Organiser, owner checks apply |
 | `GET /api/venues` | Browse venues | Public |
@@ -90,7 +93,9 @@ Every request body uses DTO validation. Required fields are marked with validati
 - `Data/RaceDayDbContext.cs`: DbSets, relationships, constraints, and schema configuration.
 - `DTOs`: request and response contracts with validation.
 - `Controllers`: HTTP endpoints and access policies.
+- `Services`: Azure Blob Storage image service and image validation (Part 3).
 - `RaceDayPOE.Tests`: API integration tests.
+- `RaceDayPOE.Web`: the Part 3 ASP.NET Core MVC front end (see below).
 - `docs`: Part 1 SQL, ERD, and API plan.
 
 ## Build and test
@@ -120,6 +125,74 @@ The workflow in `.github/workflows/ci.yml` runs on every push and pull request. 
 ![Successful GitHub Actions build Part 2](docs/CI-Screenshot2.png)
 
 
+
+## Part 3: RaceDay MVC web front end
+
+`RaceDayPOE.Web` is an ASP.NET Core 8 MVC application that gives Organisers and Participants a role-aware interface over the Part 2 API. It has **no database access and no copied business logic**: every read and write is an HTTP call to the API, and uploaded images are sent to the API, which stores them in Azure Blob Storage. CI fails if the MVC project ever references EF Core, SQL or Azure packages.
+
+### How it works
+
+```
+Browser  <-->  RaceDayPOE.Web (MVC)  <-->  RaceDayPOE API  <-->  SQL Server / Azure Blob Storage
+```
+
+- **Typed API client** (`Services/RaceDayApi.cs`): one `HttpClient`-based service for every endpoint. Failures come back as friendly messages, never raw status codes or stack traces.
+- **Session management**: on login the API issues its authentication cookie. `Infrastructure/ApiCookieHandler.cs` stores that cookie in the user's server-side MVC session and attaches it to every later API call for that user. The MVC app also keeps the account id, role and display name in session and issues its own auth cookie. If the session or the API login expires, the user is signed out and sent to the login page. Logging out clears the API session, the MVC session and the cookie.
+- **Roles**: Participants and Organisers have different interfaces (top navigation bar versus an Organiser console with a sidebar). Protected pages redirect anonymous visitors to the login page, and the wrong role sees an "access denied" page.
+
+### Pages
+
+| Role | Pages |
+|---|---|
+| Anyone | Home (upcoming events with search, type, city and date filters), event details with categories, register, log in |
+| Participant | Enrol in an event and pick a category, My Enrolments (colour-coded status, cancel), My Results (event, date, category, finish time and position such as "47th out of 312 finishers"), Profile (details, password, profile picture) |
+| Organiser | Dashboard (events, enrolments per event, upcoming dates), Events (create, edit, delete, banner upload), Venues, Categories (per event), Enrolments (participants, category, status), Results entry (finish time and position per enrolled participant), Profile |
+
+Notes on how requirements map onto the Part 2 data model:
+
+- An event's **location** is its Venue and its **distance** is set through categories. The "create event" form asks for a venue and the main distance, and creates the event plus its first category. More distances or age groups are added on the Categories page.
+- "Finishers" in a result position are counted per category, because each category is ranked separately.
+- Results are published as soon as the Organiser saves them. The page warns if the event date has not passed yet.
+
+### Running locally
+
+1. Start the API (see **Configuration and setup** above) on its HTTP profile so the default address works:
+   `dotnet run --project RaceDayPOE/RaceDayPOE/RaceDayPOE.csproj --launch-profile http` (listens on `http://localhost:5258`).
+2. Start the web app: `dotnet run --project RaceDayPOE.Web/RaceDayPOE.Web.csproj` and open `http://localhost:5200`.
+
+The API address is `Api:BaseUrl` in `RaceDayPOE.Web/appsettings.json`, or the environment variable `Api__BaseUrl`.
+
+To try both roles: register a Participant on the Sign up page, and create an Organiser using the provisioning steps in **Quick start** above. On the login page choose the matching role.
+
+### Azure Blob Storage (images)
+
+Images are handled only by the API. Configure the API with a storage account connection string, using user secrets or an environment variable and never committing it:
+
+```bash
+dotnet user-secrets set "AzureBlob:ConnectionString" "<your storage connection string>" --project RaceDayPOE/RaceDayPOE/RaceDayPOE.csproj
+# optional: dotnet user-secrets set "AzureBlob:ContainerName" "raceday-images" ...
+```
+
+For local development without an Azure account use the Azurite emulator and the connection string `UseDevelopmentStorage=true`. The API creates the container on the first upload with public read access for blobs, so the account must allow anonymous blob access (or create the container yourself). Only JPG, PNG, GIF and WebP files up to 5 MB are accepted, checked by file signature. If storage is not configured the upload endpoints answer `503` and the web app shows a friendly message while everything else keeps working.
+
+Apply the new migration before running the API: `dotnet ef database update --project RaceDayPOE/RaceDayPOE/RaceDayPOE.csproj` (adds `Events.BannerUrl` and `Participants.ProfilePictureUrl`).
+
+### Docker
+
+The MVC app runs in a container built from `RaceDayPOE.Web/Dockerfile` (multi-stage build, small ASP.NET runtime image, non-root user, configuration through environment variables). The API must be running and reachable, by default on the host at port 5258.
+
+**Single command to build and start the web app (http://localhost:8080):**
+
+```bash
+docker build -t raceday-web ./RaceDayPOE.Web && docker run --rm -p 8080:8080 --add-host=host.docker.internal:host-gateway -e Api__BaseUrl=http://host.docker.internal:5258/ raceday-web
+```
+
+Or with Docker Compose: `docker compose up --build` (set `API_BASE_URL` to point at a different API address). The containerised app uses the same configuration keys as a local run, so it behaves identically.
+
+### Part 3 tests and CI
+
+- `RaceDayPOE.Tests` adds API tests for banner and profile picture uploads (success, replacement, invalid file, ownership, role, storage unavailable), the image validator, the Organiser events endpoint and the richer enrolment and result read models. Blob Storage is replaced by an in-memory fake, so tests need no Azure account.
+- The GitHub Actions workflow now also builds `RaceDayPOE.Web`, checks that it contains no database or Azure access, and builds the Docker image and checks the container starts.
 
 ## Demo video
 

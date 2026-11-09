@@ -27,3 +27,11 @@ The current execution environment does not have the .NET SDK (`dotnet`) installe
 - Expanded the test suite from 6 to 51 tests to cover every Part 2 testing requirement.
 - README: CI screenshot and YouTube sections, first-Organiser quick start, corrected step numbering.
 - Still unverified: `dotnet build`/`dotnet test` were not run in the authoring environment - check the GitHub Actions result.
+
+
+## Part 3 (MVC front end)
+
+- `RaceDayPOE.Web`: ASP.NET Core 8 MVC app consuming the API only (typed client, per-user API cookie forwarding, session management, role-based areas).
+- API additions: Azure Blob image storage (banner and profile picture endpoints), `GET /api/organisers/me/events`, category enrolled counts, richer enrolment and result read models, migration `AddImageUrls`.
+- Dockerfile and docker-compose.yml for the web app; CI builds the MVC project and the Docker image.
+- Verification: the MVC app was exercised end to end in a browser against a stand-in API with the same routes and JSON shapes. The API changes and the test project could not be compiled or run in the authoring environment (NuGet was unreachable), so check the first GitHub Actions run.
