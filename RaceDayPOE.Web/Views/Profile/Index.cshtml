@@ -1,0 +1,96 @@
+@model ProfilePageViewModel
+@{
+    ViewData["Title"] = "My profile";
+    var isParticipant = User.IsInRole(RoleNames.Participant);
+    var initial = Model.Account.FirstName.Length > 0 ? Model.Account.FirstName[0].ToString().ToUpperInvariant() : "?";
+}
+<div class="page-head">
+    <div><h1 class="rd-title">My profile</h1><p class="text-muted mb-0">Member since @Format.Date(Model.Account.CreatedAt) &middot; @Model.Account.Role</p></div>
+</div>
+
+<div class="row g-4">
+    @if (isParticipant)
+    {
+        <div class="col-lg-4">
+            <section class="rd-card rd-card-body text-center" aria-labelledby="pic-h">
+                <h2 class="rd-h2" id="pic-h">Profile picture</h2>
+                <div class="d-flex justify-content-center my-3">
+                    @if (!string.IsNullOrEmpty(Model.Account.ProfilePictureUrl))
+                    {
+                        <img id="pic-preview" class="avatar-lg" src="@Model.Account.ProfilePictureUrl" alt="Your profile picture" />
+                    }
+                    else
+                    {
+                        <div class="avatar-lg" id="pic-initial" role="img" aria-label="No profile picture yet">@initial</div>
+                    }
+                </div>
+                <form asp-action="UploadPicture" method="post" enctype="multipart/form-data">
+                    <label for="picture" class="form-label visually-hidden">Choose a picture</label>
+                    <input type="file" id="picture" name="picture" class="form-control mb-2" accept="image/png,image/jpeg,image/gif,image/webp" required />
+                    <div class="form-text mb-3">JPG, PNG, GIF or WebP, up to 5 MB.</div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-cloud-upload"></i> Upload picture</button>
+                </form>
+            </section>
+        </div>
+    }
+    <div class="@(isParticipant ? "col-lg-8" : "col-lg-8 col-xl-6")">
+        <section class="rd-card rd-card-body mb-4" aria-labelledby="det-h">
+            <h2 class="rd-h2" id="det-h">Personal information</h2>
+            <form asp-action="UpdateDetails" method="post" novalidate>
+                @if (ViewData.ModelState.TryGetValue("Details", out var detailErrors) && detailErrors.Errors.Count > 0)
+                {
+                    <div class="alert alert-danger" role="alert">@detailErrors.Errors[0].ErrorMessage</div>
+                }
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label asp-for="Details.FirstName" class="form-label"></label>
+                        <input asp-for="Details.FirstName" class="form-control" autocomplete="given-name" />
+                        <span asp-validation-for="Details.FirstName" class="invalid-feedback d-block"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Details.LastName" class="form-label"></label>
+                        <input asp-for="Details.LastName" class="form-control" autocomplete="family-name" />
+                        <span asp-validation-for="Details.LastName" class="invalid-feedback d-block"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Details.Email" class="form-label">Email address</label>
+                        <input asp-for="Details.Email" class="form-control" autocomplete="email" />
+                        <span asp-validation-for="Details.Email" class="invalid-feedback d-block"></span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save changes</button>
+            </form>
+        </section>
+
+        <section class="rd-card rd-card-body" aria-labelledby="pw-h">
+            <h2 class="rd-h2" id="pw-h">Change password</h2>
+            <form asp-action="ChangePassword" method="post" novalidate>
+                @if (ViewData.ModelState.TryGetValue("Password", out var pwErrors) && pwErrors.Errors.Count > 0)
+                {
+                    <div class="alert alert-danger" role="alert">@pwErrors.Errors[0].ErrorMessage</div>
+                }
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="Password.CurrentPassword" class="form-label"></label>
+                        <input asp-for="Password.CurrentPassword" class="form-control" autocomplete="current-password" value="" />
+                        <span asp-validation-for="Password.CurrentPassword" class="invalid-feedback d-block"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Password.NewPassword" class="form-label"></label>
+                        <input asp-for="Password.NewPassword" class="form-control" autocomplete="new-password" value="" />
+                        <div class="form-text">At least 12 characters.</div>
+                        <span asp-validation-for="Password.NewPassword" class="invalid-feedback d-block"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Password.ConfirmNewPassword" class="form-label"></label>
+                        <input asp-for="Password.ConfirmNewPassword" class="form-control" autocomplete="new-password" value="" />
+                        <span asp-validation-for="Password.ConfirmNewPassword" class="invalid-feedback d-block"></span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-dark mt-3">Update password</button>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
