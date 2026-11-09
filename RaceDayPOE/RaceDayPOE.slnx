@@ -2,4 +2,5 @@
   <Project Path="RaceDayPOE/RaceDayPOE.csproj" />
   <Project Path="../RaceDayPOE.Tests/RaceDayPOE.Tests.csproj" />
   <Project Path="../RaceDayPOE.Web/RaceDayPOE.Web.csproj" />
+  <Project Path="../RaceDayPOE.Web.Tests/RaceDayPOE.Web.Tests.csproj" />
 </Solution>

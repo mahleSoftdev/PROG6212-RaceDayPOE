@@ -192,6 +192,7 @@ Or with Docker Compose: `docker compose up --build` (set `API_BASE_URL` to point
 ### Part 3 tests and CI
 
 - `RaceDayPOE.Tests` adds API tests for banner and profile picture uploads (success, replacement, invalid file, ownership, role, storage unavailable), the image validator, the Organiser events endpoint and the richer enrolment and result read models. Blob Storage is replaced by an in-memory fake, so tests need no Azure account.
+- `RaceDayPOE.Web.Tests` covers the front end's own logic: display formatting, friendly error messages, per-user API cookie handling and the typed API client (bad login, expired session, unreachable API, uploads), all without a running API.
 - The GitHub Actions workflow now also builds `RaceDayPOE.Web`, checks that it contains no database or Azure access, and builds the Docker image and checks the container starts.
 
 ## Demo video
