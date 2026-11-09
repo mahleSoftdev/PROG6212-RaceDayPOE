@@ -66,6 +66,7 @@ a { text-underline-offset: 2px; }
 .role-organiser { background: rgba(255, 90, 31, .2); color: #ff8a5e; }
 .dropdown-menu { border-radius: 12px; border-color: var(--rd-line); box-shadow: var(--rd-shadow); }
 .dropdown-item { display: block; width: 100%; }
+.rd-footer .text-muted { color: #9aa4b2 !important; }
 .rd-footer { background: var(--rd-ink); color: #cfd5de; padding: 1.2rem 0; font-size: .9rem; margin-top: auto; }
 
 /* ---- hero ---- */
@@ -161,9 +162,9 @@ a { text-underline-offset: 2px; }
 .org-body { background: #eef0f4; }
 .org-topbar { background: var(--rd-ink); padding: .7rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--rd-orange); }
 .org-shell { display: flex; flex: 1; min-height: 100vh; }
-.org-sidebar { background: var(--rd-ink); color: #cfd5de; width: 260px; flex: 0 0 260px; border-right: 1px solid #000; }
+.org-sidebar { background-color: var(--rd-ink) !important; color: #cfd5de; width: 260px; flex: 0 0 260px; border-right: 1px solid #000; }
 .org-sidebar.offcanvas-lg { --bs-offcanvas-bg: var(--rd-ink); --bs-offcanvas-color: #cfd5de; }
-@media (min-width: 992px) { .org-sidebar { position: sticky; top: 0; height: 100vh; overflow-y: auto; } }
+@media (min-width: 992px) { .org-sidebar { position: sticky; top: 0; height: 100vh !important; overflow-y: auto; } .org-sidebar .offcanvas-body { min-height: 100%; } }
 .org-brand { padding: 1.4rem 1.4rem 1rem; }
 .org-who { display: flex; align-items: center; gap: .7rem; padding: .9rem 1.4rem 1.1rem; border-bottom: 1px solid var(--rd-ink-3); color: #fff; }
 .org-nav { display: flex; flex-direction: column; padding: .8rem .7rem; gap: .15rem; }

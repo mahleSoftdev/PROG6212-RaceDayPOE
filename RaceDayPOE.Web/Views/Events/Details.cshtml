@@ -49,7 +49,7 @@
                                 <label class="category-row" for="cat-@c.CategoryID">
                                     <div class="flex-grow-1">
                                         <div class="fw-semibold">@c.Name</div>
-                                        <div class="small text-muted">@Format.Km(c.DistanceKm) &middot; @Format.Rand(c.EntryFee) &middot; @(c.IsFull ? "Full" : $"{c.SpotsLeft} spots left")</div>
+                                        <div class="small text-muted">@Format.Km(c.DistanceKm) &middot; @Format.Rand(c.EntryFee) &middot; @c.SpotsText</div>
                                     </div>
                                     @if (already) { <span class="status-badge status-confirmed"><i class="bi bi-check-circle-fill"></i> Enrolled</span> }
                                     else if (c.IsFull) { <span class="status-badge status-full">Full</span> }
@@ -68,7 +68,7 @@
                         <li class="category-row" style="cursor:default">
                             <div class="flex-grow-1">
                                 <div class="fw-semibold">@c.Name</div>
-                                <div class="small text-muted">@Format.Km(c.DistanceKm) &middot; @Format.Rand(c.EntryFee) &middot; @(c.IsFull ? "Full" : $"{c.SpotsLeft} spots left")</div>
+                                <div class="small text-muted">@Format.Km(c.DistanceKm) &middot; @Format.Rand(c.EntryFee) &middot; @c.SpotsText</div>
                             </div>
                             @if (c.IsFull) { <span class="status-badge status-full">Full</span> }
                         </li>

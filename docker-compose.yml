@@ -1,0 +1,15 @@
+# Runs the RaceDay MVC web app in a container.
+#   docker compose up --build
+# The app talks to the RaceDay API (Part 2), which must already be running on the host (port 5258 by default).
+# Override the address with:  API_BASE_URL=http://my-api-host:5258/ docker compose up --build
+services:
+  web:
+    build: ./RaceDayPOE.Web
+    image: raceday-web
+    ports:
+      - "8080:8080"
+    environment:
+      Api__BaseUrl: ${API_BASE_URL:-http://host.docker.internal:5258/}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

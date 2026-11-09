@@ -1,4 +1,4 @@
-name: RaceDay API CI
+name: RaceDay CI (API and MVC)
 
 on:
   push:
@@ -40,5 +40,45 @@ jobs:
       - name: Build solution
         run: dotnet build RaceDayPOE/RaceDayPOE.sln --configuration Release --no-restore
 
+      - name: Build MVC web project (Part 3)
+        run: dotnet build RaceDayPOE.Web/RaceDayPOE.Web.csproj --configuration Release --no-restore
+
+      - name: Verify the MVC project has no direct database or Azure access
+        run: |
+          if grep -Eiq "EntityFrameworkCore|SqlClient|Azure\.Storage" RaceDayPOE.Web/RaceDayPOE.Web.csproj; then
+            echo "The MVC project must not reference database or Azure packages"; exit 1
+          fi
+          if grep -rEq "DbContext|BlobServiceClient|BlobContainerClient" RaceDayPOE.Web --include=*.cs --exclude-dir=obj --exclude-dir=bin; then
+            echo "The MVC project must not access the database or Azure directly"; exit 1
+          fi
+
+      - name: Verify Part 3 deliverables
+        run: |
+          test -f RaceDayPOE.Web/Dockerfile
+          test -f docker-compose.yml
+          grep -q "docker run" README.md
+
       - name: Run unit and integration tests
         run: dotnet test RaceDayPOE/RaceDayPOE.sln --configuration Release --no-build --logger "console;verbosity=normal"
+
+  docker-build:
+    name: Build MVC Docker image
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build --tag raceday-web ./RaceDayPOE.Web
+
+      - name: Smoke test the container starts
+        run: |
+          docker run -d --name raceday-web -p 8080:8080 -e Api__BaseUrl=http://localhost:5258/ raceday-web
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/Account/Login || true)
+            [ "$code" = "200" ] && echo "Container is serving pages" && exit 0
+            sleep 2
+          done
+          docker logs raceday-web
+          exit 1

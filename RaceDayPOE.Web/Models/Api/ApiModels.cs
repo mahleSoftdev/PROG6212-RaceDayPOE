@@ -33,6 +33,7 @@ public class CategoryDto
 
     [JsonIgnore] public int SpotsLeft => Math.Max(0, MaxParticipants - Enrolled);
     [JsonIgnore] public bool IsFull => Enrolled >= MaxParticipants;
+    [JsonIgnore] public string SpotsText => IsFull ? "Full" : $"{SpotsLeft} {(SpotsLeft == 1 ? "spot" : "spots")} left";
 }
 
 public class EventDto
