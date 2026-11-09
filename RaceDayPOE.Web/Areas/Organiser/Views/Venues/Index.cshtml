@@ -1,0 +1,36 @@
+@model List<VenueDto>
+@{ ViewData["Title"] = "Venues"; }
+<div class="page-head">
+    <div><h1 class="rd-title">Venues</h1><p class="text-muted mb-0">Where your events take place.</p></div>
+    <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> New venue</a>
+</div>
+@if (Model.Count == 0)
+{
+    <div class="rd-card rd-empty text-center">
+        <div class="rd-empty-icon"><i class="bi bi-geo-alt"></i></div>
+        <h2 class="rd-h2">No venues yet</h2>
+        <p class="text-muted">Add a venue, then pick it when you create an event.</p>
+        <a class="btn btn-primary" asp-action="Create">Add a venue</a>
+    </div>
+}
+else
+{
+    <div class="rd-card table-responsive">
+        <table class="table rd-table">
+            <caption class="visually-hidden">Venues</caption>
+            <thead><tr><th scope="col">Venue</th><th scope="col">Address</th><th scope="col">City</th><th scope="col">Province</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody>
+            @foreach (var v in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">@v.Name</td><td>@v.AddressLine</td><td>@v.City</td><td>@v.Province</td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-route-id="@v.VenueID">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@v.VenueID" method="post" class="d-inline" data-confirm="Delete venue &quot;@v.Name&quot;?"><button type="submit" class="btn btn-outline-danger btn-sm">Delete</button></form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

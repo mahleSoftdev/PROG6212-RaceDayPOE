@@ -1,0 +1,49 @@
+@model List<EventDto>
+@{ ViewData["Title"] = "Events"; }
+<div class="page-head">
+    <div><h1 class="rd-title">Events</h1><p class="text-muted mb-0">Create, edit and manage your events.</p></div>
+    <a class="btn btn-primary" asp-action="Create"><i class="bi bi-plus-lg"></i> New event</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="rd-card rd-empty text-center">
+        <div class="rd-empty-icon"><i class="bi bi-calendar-plus"></i></div>
+        <h2 class="rd-h2">No events yet</h2>
+        <p class="text-muted">Create your first run, walk or ride.</p>
+        <a class="btn btn-primary" asp-action="Create">Create an event</a>
+    </div>
+}
+else
+{
+    <div class="rd-card table-responsive">
+        <table class="table rd-table">
+            <caption class="visually-hidden">Your events</caption>
+            <thead><tr><th scope="col" style="width:80px"><span class="visually-hidden">Banner</span></th><th scope="col">Event</th><th scope="col">Date</th><th scope="col">Venue</th><th scope="col">Enrolled</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody>
+            @foreach (var e in Model.OrderByDescending(e => e.EventDate))
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(e.BannerUrl)) { <img class="thumb" src="@e.BannerUrl" alt="" loading="lazy" /> }
+                        else { <span class="thumb-empty @Format.CoverClass(e.EventType)"><i class="bi bi-@Format.TypeIcon(e.EventType)"></i></span> }
+                    </td>
+                    <td><div class="fw-semibold">@e.Name</div><partial name="_TypePill" model="e.EventType" /></td>
+                    <td>@Format.Date(e.EventDate)</td>
+                    <td>@(e.Venue ?? "-")</td>
+                    <td class="fw-bold">@e.EnrolmentCount</td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-outline-secondary btn-sm" asp-controller="Categories" asp-action="Index" asp-route-eventId="@e.EventID" title="Categories"><i class="bi bi-tags"></i></a>
+                        <a class="btn btn-outline-secondary btn-sm" asp-controller="Enrolments" asp-action="Index" asp-route-eventId="@e.EventID" title="Enrolments"><i class="bi bi-people"></i></a>
+                        <a class="btn btn-outline-secondary btn-sm" asp-controller="Results" asp-action="Index" asp-route-eventId="@e.EventID" title="Results"><i class="bi bi-stopwatch"></i></a>
+                        <a class="btn btn-outline-primary btn-sm" asp-action="Edit" asp-route-id="@e.EventID">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@e.EventID" method="post" class="d-inline" data-confirm="Delete &quot;@e.Name&quot;? This cannot be undone.">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
