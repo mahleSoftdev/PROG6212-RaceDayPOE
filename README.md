@@ -197,7 +197,8 @@ Or with Docker Compose: `docker compose up --build` (set `API_BASE_URL` to point
 
 ## Demo video
 
-**YouTube (unlisted):** https://youtu.be/O2BhzFLNiqs
+**YouTube (unlisted):** 1. https://youtu.be/O2BhzFLNiqs
+2. https://youtu.be/d5ZokDP_PYk
 
 ## Security notes
 
